@@ -28,6 +28,7 @@ Installation & Setup
 Step 1: Clone or download the project files.
 Step 2: Navigate to the project folder.
 Step 3: Run the program using: python main.py.
+
 Usage Guide Example workflow: Create a cart, add items, display selected products, and proceed to checkout, where the system calculates the total and generates a receipt.
 
 Module Description - Module 1: Sales Transaction Processing.
