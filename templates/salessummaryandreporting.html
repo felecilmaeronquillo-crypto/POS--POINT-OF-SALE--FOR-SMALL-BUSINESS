@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FEATURE 3: Sales Reports</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .back-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            cursor: pointer;
+        }
+        .feature-badge {
+            background: #667eea;
+            color: white;
+            padding: 0.3rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .report-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid #e9ecef;
+        }
+        .report-tab {
+            padding: 0.5rem 1rem;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            color: #6c757d;
+        }
+        .report-tab.active {
+            color: #667eea;
+            border-bottom: 2px solid #667eea;
+        }
+        .report-content {
+            display: none;
+        }
+        .report-content.active {
+            display: block;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1rem;
+            border-radius: 16px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+        .date-filter {
+            margin-bottom: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .date-filter input, .date-filter select {
+            padding: 0.5rem;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .best-seller-item {
+            background: #f8f9fa;
+            padding: 0.8rem;
+            margin-bottom: 0.5rem;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .rank {
+            font-weight: bold;
+            color: #ffc107;
+            font-size: 1.2rem;
+        }
+        .daily-breakdown {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .breakdown-item {
+            background: #f8f9fa;
+            padding: 0.5rem;
+            margin-bottom: 0.3rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-btn" onclick="window.location.href='/'">← Back to Dashboard</button>
+            <span class="feature-badge">📊 FEATURE 3: Sales Summary & Reporting</span>
+            <div id="userInfo">
+                <button class="back-btn" onclick="logout()" style="background: #dc2626;">Logout</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="report-tabs">
+                <button class="report-tab active" data-report="daily">📅 Daily Report</button>
+                <button class="report-tab" data-report="monthly">📆 Monthly Report</button>
+                <button class="report-tab" data-report="analytics">📈 Advanced Analytics</button>
+            </div>
+
+            <!-- Daily Report -->
+            <div id="dailyReport" class="report-content active">
+                <div class="date-filter">
+                    <label>Select Date:</label>
+                    <input type="date" id="dailyDate">
+                    <button class="btn" onclick="loadDailyReport()">Generate Report</button>
+                </div>
+                <div id="dailyContent"></div>
+            </div>
+
+            <!-- Monthly Report -->
+            <div id="monthlyReport" class="report-content">
+                <div class="date-filter">
+                    <label>Select Month:</label>
+                    <input type="month" id="monthlyDate">
+                    <button class="btn" onclick="loadMonthlyReport()">Generate Report</button>
+                </div>
+                <div id="monthlyContent"></div>
+            </div>
+
+            <!-- Analytics -->
+            <div id="analyticsReport" class="report-content">
+                <div id="analyticsContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function checkAuth() {
+            const response = await fetch('/api/check-auth');
+            const data = await response.json();
+            if (!data.authenticated || data.role !== 'admin') {
+                alert('Access Denied! Only administrators can access reports.');
+                window.location.href = '/';
+            }
+            init();
+        }
+
+        async function logout() {
+            await fetch('/api/logout', { method: 'POST' });
+            window.location.href = '/';
+        }
+
+        function init() {
+            // Set default dates
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dailyDate').value = today;
+            document.getElementById('monthlyDate').value = today.substring(0, 7);
+            
+            loadDailyReport();
+            loadMonthlyReport();
+            loadAnalytics();
+        }
+
+        async function loadDailyReport() {
+            const date = document.getElementById('dailyDate').value;
+            const response = await fetch(`/api/reports/daily?date=${date}`);
+            const data = await response.json();
+            
+            const content = document.getElementById('dailyContent');
+            content.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">₱${data.total_revenue.toLocaleString()}</div>
+                        <div class="stat-label">Total Revenue</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #28a745, #20c997);">
+                        <div class="stat-value">${data.total_transactions}</div>
+                        <div class="stat-label">Transactions</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #17a2b8, #138496);">
+                        <div class="stat-value">${data.total_items}</div>
+                        <div class="stat-label">Items Sold</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #ffc107, #ff9800);">
+                        <div class="stat-value">₱${data.avg_transaction.toLocaleString()}</div>
+                        <div class="stat-label">Average Transaction</div>
+                    </div>
+                </div>
+                <h4 style="margin: 1rem 0 0.5rem 0;">🏆 Top Selling Items</h4>
+                ${data.best_sellers.length > 0 ? data.best_sellers.map((item, i) => `
+                    <div class="best-seller-item">
+                        <span class="rank">#${i+1}</span>
+                        <span>${item.name}</span>
+                        <span><strong>${item.quantity}</strong> units</span>
+                    </div>
+                `).join('') : '<p>No sales for this day</p>'}
+            `;
+        }
+
+        async function loadMonthlyReport() {
+            const month = document.getElementById('monthlyDate').value;
+            const [year, monthNum] = month.split('-');
+            const response = await fetch(`/api/reports/monthly?year=${year}&month=${monthNum}`);
+            const data = await response.json();
+            
+            const content = document.getElementById('monthlyContent');
+            content.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">₱${data.total_revenue.toLocaleString()}</div>
+                        <div class="stat-label">Total Revenue</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #28a745, #20c997);">
+                        <div class="stat-value">${data.total_transactions}</div>
+                        <div class="stat-label">Transactions</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #17a2b8, #138496);">
+                        <div class="stat-value">${data.total_items}</div>
+                        <div class="stat-label">Items Sold</div>
+                    </div>
+                </div>
+                <h4 style="margin: 1rem 0 0.5rem 0;">📊 Daily Revenue Breakdown</h4>
+                <div class="daily-breakdown">
+                    ${data.daily_breakdown.map(day => `
+                        <div class="breakdown-item">
+                            <span>Day ${day.day}</span>
+                            <span>₱${day.revenue.toLocaleString()}</span>
+                        </div>
+                    `).join('')}
+                </div>
+                <h4 style="margin: 1rem 0 0.5rem 0;">🏆 Best Sellers This Month</h4>
+                ${data.best_sellers.map((item, i) => `
+                    <div class="best-seller-item">
+                        <span class="rank">#${i+1}</span>
+                        <span>${item.name}</span>
+                        <span><strong>${item.quantity}</strong> units</span>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        async function loadAnalytics() {
+            const response = await fetch('/api/reports/analytics');
+            const data = await response.json();
+            
+            const content = document.getElementById('analyticsContent');
+            content.innerHTML = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">₱${data.total_revenue.toLocaleString()}</div>
+                        <div class="stat-label">Lifetime Revenue</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #28a745, #20c997);">
+                        <div class="stat-value">${data.total_transactions}</div>
+                        <div class="stat-label">Total Transactions</div>
+                    </div>
+                    <div class="stat-card" style="background: linear-gradient(135deg, #ffc107, #ff9800);">
+                        <div class="stat-value">₱${data.avg_transaction.toLocaleString()}</div>
+                        <div class="stat-label">Average Transaction</div>
+                    </div>
+                </div>
+                <h4 style="margin: 1rem 0 0.5rem 0;">🏆 All-Time Best Sellers</h4>
+                ${data.best_sellers.map((item, i) => `
+                    <div class="best-seller-item">
+                        <span class="rank">#${i+1}</span>
+                        <span>${item.name}</span>
+                        <span><strong>${item.quantity}</strong> units sold</span>
+                    </div>
+                `).join('')}
+                <h4 style="margin: 1rem 0 0.5rem 0;">📈 Last 7 Days Revenue</h4>
+                ${data.last_7_days.map(day => `
+                    <div class="breakdown-item">
+                        <span>${new Date(day.date).toLocaleDateString()}</span>
+                        <span>₱${day.revenue.toLocaleString()}</span>
+                        <span>${day.transactions} transactions</span>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        // Tab switching
+        document.querySelectorAll('.report-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.report-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                document.querySelectorAll('.report-content').forEach(c => c.classList.remove('active'));
+                document.getElementById(`${tab.dataset.report}Report`).classList.add('active');
+            });
+        });
+
+        checkAuth();
+    </script>
+</body>
+</html>
