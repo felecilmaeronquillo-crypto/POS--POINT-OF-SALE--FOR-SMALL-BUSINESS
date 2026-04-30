@@ -1,251 +1,99 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Transaction - POS System</title>
+    <title>Sales Transaction</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-        }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 20px;
-            border-bottom: 2px solid #eee;
-        }
-        .products-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-        .product-card {
-            border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        .product-card:hover {
-            background: #f0f0f0;
-            transform: scale(1.02);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        }
-        .cart {
-            background: #f8f9fa;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 20px;
-        }
-        .cart-item {
-            display: flex;
-            justify-content: space-between;
-            padding: 10px;
-            border-bottom: 1px solid #ddd;
-        }
-        .total {
-            font-size: 24px;
-            font-weight: bold;
-            text-align: right;
-            margin-top: 20px;
-            padding-top: 20px;
-            border-top: 2px solid #ddd;
-        }
-        input, select, button {
-            padding: 10px;
-            margin: 5px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-        }
-        button {
-            background: #667eea;
-            color: white;
-            cursor: pointer;
-            border: none;
-        }
-        button:hover { background: #5a67d8; }
+        body { font-family: Arial; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        .products { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin: 20px 0; }
+        .product { border: 1px solid #ddd; padding: 15px; border-radius: 5px; cursor: pointer; }
+        .product:hover { background: #f0f0f0; }
+        .cart { background: #f8f9fa; padding: 20px; border-radius: 10px; margin-top: 20px; }
+        .cart-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #ddd; }
+        button { background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
         .btn-success { background: #28a745; }
-        .btn-danger { background: #dc3545; }
-        .receipt {
-            background: #f8f9fa;
-            padding: 20px;
-            font-family: monospace;
-            white-space: pre-wrap;
-            margin-top: 20px;
-            border-radius: 5px;
-            max-height: 500px;
-            overflow-y: auto;
-        }
-        .hidden { display: none; }
-        .back-btn {
-            background: #6c757d;
-            margin-bottom: 20px;
-        }
+        .receipt { background: #f8f9fa; padding: 20px; font-family: monospace; margin-top: 20px; white-space: pre-wrap; }
+        .back-btn { background: #6c757d; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🛒 Sales Transaction System</h1>
-            <button class="back-btn" onclick="goBack()">← Back to Dashboard</button>
-        </div>
-        
-        <h3>Products</h3>
-        <div id="productsGrid" class="products-grid"></div>
-        
+        <button class="back-btn" onclick="location.href='/'">← Back</button>
+        <h1>Sales Transaction</h1>
+        <div id="products" class="products"></div>
         <div class="cart">
-            <h3>Shopping Cart</h3>
-            <div id="cartItems"></div>
-            <div class="total">Total: ₱<span id="cartTotal">0</span></div>
-            <div style="margin-top: 20px;">
-                <label>Discount Type:</label>
-                <select id="discountType">
-                    <option value="none">No Discount</option>
-                    <option value="percentage">Percentage (%)</option>
-                    <option value="fixed">Fixed Amount (₱)</option>
-                </select>
-                <input type="number" id="discountValue" placeholder="Discount value" step="0.01">
-                <input type="number" id="paymentAmount" placeholder="Payment Amount" step="0.01">
-                <button class="btn-success" onclick="processPayment()">Process Payment</button>
-                <button onclick="clearCart()">Clear Cart</button>
-            </div>
+            <h3>Cart</h3>
+            <div id="cart"></div>
+            <div>Total: ₱<span id="total">0</span></div>
+            <select id="discountType"><option value="none">No Discount</option><option value="percentage">%</option><option value="fixed">Fixed</option></select>
+            <input type="number" id="discountValue" placeholder="Discount value">
+            <input type="number" id="payment" placeholder="Payment amount">
+            <button class="btn-success" onclick="processPayment()">Pay</button>
+            <button onclick="clearCart()">Clear</button>
         </div>
-        <div id="receipt" class="receipt hidden"></div>
+        <div id="receipt" class="receipt" style="display:none;"></div>
     </div>
-    
     <script>
-        let currentCart = [];
-        
-        async function checkAuth() {
-            const response = await fetch('/api/check-auth');
-            const data = await response.json();
-            if (!data.authenticated) {
-                window.location.href = '/';
-            }
-            loadProducts();
-        }
-        
+        let cart = [];
         async function loadProducts() {
-            const response = await fetch('/api/products');
-            const products = await response.json();
-            document.getElementById('productsGrid').innerHTML = products.map(p => `
-                <div class="product-card" onclick="addToCart(${p.id}, '${p.name}', ${p.price})">
-                    <strong>${p.name}</strong><br>
-                    ₱${p.price.toFixed(2)}<br>
-                    Stock: ${p.stock}
-                </div>
-            `).join('');
+            const res = await fetch('/api/products');
+            const products = await res.json();
+            document.getElementById('products').innerHTML = products.map(p => 
+                `<div class="product" onclick="addToCart(${p.id}, '${p.name}', ${p.price})">
+                    <strong>${p.name}</strong><br>₱${p.price}<br>Stock: ${p.stock}
+                </div>`
+            ).join('');
         }
-        
         function addToCart(id, name, price) {
-            const existing = currentCart.find(item => item.id === id);
-            if (existing) {
-                existing.quantity++;
-            } else {
-                currentCart.push({id, name, price, quantity: 1});
-            }
-            updateCartDisplay();
+            const existing = cart.find(i => i.id === id);
+            if(existing) existing.quantity++;
+            else cart.push({id, name, price, quantity: 1});
+            updateCart();
         }
-        
-        function updateCartDisplay() {
-            const cartDiv = document.getElementById('cartItems');
+        function updateCart() {
             let total = 0;
-            cartDiv.innerHTML = currentCart.map(item => {
+            document.getElementById('cart').innerHTML = cart.map(item => {
                 total += item.price * item.quantity;
-                return `
-                    <div class="cart-item">
-                        <span>${item.name}</span>
-                        <span>
-                            ₱${item.price} × ${item.quantity} = ₱${(item.price * item.quantity).toFixed(2)}
-                            <button onclick="updateQuantity(${item.id}, -1)">-</button>
-                            <button onclick="updateQuantity(${item.id}, 1)">+</button>
-                            <button class="btn-danger" onclick="removeFromCart(${item.id})">×</button>
-                        </span>
-                    </div>
-                `;
+                return `<div class="cart-item">
+                    ${item.name} x${item.quantity} = ₱${item.price * item.quantity}
+                    <button onclick="updateQty(${item.id}, -1)">-</button>
+                    <button onclick="updateQty(${item.id}, 1)">+</button>
+                    <button onclick="removeItem(${item.id})">×</button>
+                </div>`;
             }).join('');
-            document.getElementById('cartTotal').innerText = total.toFixed(2);
+            document.getElementById('total').innerText = total;
         }
-        
-        function updateQuantity(id, delta) {
-            const item = currentCart.find(i => i.id === id);
-            if (item) {
+        function updateQty(id, delta) {
+            const item = cart.find(i => i.id === id);
+            if(item) {
                 item.quantity += delta;
-                if (item.quantity <= 0) {
-                    currentCart = currentCart.filter(i => i.id !== id);
-                }
-                updateCartDisplay();
+                if(item.quantity <= 0) cart = cart.filter(i => i.id !== id);
+                updateCart();
             }
         }
-        
-        function removeFromCart(id) {
-            currentCart = currentCart.filter(i => i.id !== id);
-            updateCartDisplay();
-        }
-        
-        function clearCart() {
-            currentCart = [];
-            updateCartDisplay();
-            document.getElementById('receipt').classList.add('hidden');
-        }
-        
+        function removeItem(id) { cart = cart.filter(i => i.id !== id); updateCart(); }
+        function clearCart() { cart = []; updateCart(); document.getElementById('receipt').style.display = 'none'; }
         async function processPayment() {
-            const payment = parseFloat(document.getElementById('paymentAmount').value);
+            const payment = parseFloat(document.getElementById('payment').value);
             const discountType = document.getElementById('discountType').value;
             const discountValue = parseFloat(document.getElementById('discountValue').value);
-            
-            if (!payment || payment <= 0) {
-                alert('Please enter payment amount');
-                return;
-            }
-            
             let discount = null;
-            if (discountType !== 'none' && discountValue > 0) {
-                discount = {type: discountType, value: discountValue};
-            }
-            
-            const response = await fetch('/api/process-payment', {
+            if(discountType !== 'none' && discountValue > 0) discount = {type: discountType, value: discountValue};
+            const res = await fetch('/api/process-payment', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    cart_items: currentCart,
-                    payment: payment,
-                    discount: discount
-                })
+                body: JSON.stringify({cart_items: cart, payment, discount})
             });
-            
-            const data = await response.json();
-            if (data.success) {
+            const data = await res.json();
+            if(data.success) {
                 document.getElementById('receipt').innerHTML = `<pre>${data.receipt}</pre>`;
-                document.getElementById('receipt').classList.remove('hidden');
-                currentCart = [];
-                updateCartDisplay();
-                document.getElementById('paymentAmount').value = '';
-                document.getElementById('discountValue').value = '';
+                document.getElementById('receipt').style.display = 'block';
+                cart = [];
+                updateCart();
                 alert(data.message);
-            } else {
-                alert('Error: ' + data.message);
-            }
+            } else alert('Error: ' + data.message);
         }
-        
-        function goBack() {
-            window.location.href = '/';
-        }
-        
-        checkAuth();
+        loadProducts();
     </script>
 </body>
 </html>

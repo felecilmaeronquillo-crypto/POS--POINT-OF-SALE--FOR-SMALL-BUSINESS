@@ -1,130 +1,70 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>POS Dashboard</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-        }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        .header {
-            background: white; padding: 20px; border-radius: 10px;
-            margin-bottom: 30px; display: flex; justify-content: space-between;
-            align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .login-container {
-            background: white; border-radius: 10px; padding: 30px;
-            max-width: 400px; margin: 100px auto; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        input, button {
-            width: 100%; padding: 10px; margin: 10px 0;
-            border: 1px solid #ddd; border-radius: 5px;
-        }
-        button {
-            background: #667eea; color: white; border: none;
-            cursor: pointer; font-weight: bold;
-        }
-        button:hover { background: #5a67d8; }
-        .features-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px; margin-top: 30px;
-        }
-        .feature-card {
-            background: white; padding: 25px; border-radius: 10px;
-            text-decoration: none; color: #333; display: block;
-            transition: transform 0.3s; box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .feature-card:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
-        .feature-card h3 { color: #667eea; margin-bottom: 10px; }
-        .hidden { display: none; }
-        .logout-btn { background: #dc3545; width: auto; padding: 5px 15px; }
+        body { font-family: Arial; margin: 0; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .header { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; }
+        .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; }
+        .feature { background: white; padding: 20px; border-radius: 10px; text-decoration: none; color: #333; display: block; }
+        .feature:hover { transform: translateY(-5px); box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+        button { background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; }
+        .login-box { background: white; padding: 30px; border-radius: 10px; max-width: 400px; margin: 100px auto; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; }
     </style>
 </head>
 <body>
-    <div id="loginContainer" class="login-container">
-        <h2>POS System Login</h2>
+    <div id="loginBox" class="login-box">
+        <h2>POS Login</h2>
         <input type="text" id="username" placeholder="Username" value="admin">
         <input type="password" id="password" placeholder="Password" value="secret">
-        <button onclick="login()">Login</button>
-        <p style="margin-top: 15px; font-size: 12px; color: #666;">
-            Test: admin/secret or user/123456
-        </p>
+        <button onclick="login()" style="background: #667eea; width: 100%;">Login</button>
+        <p style="margin-top: 10px;">Demo: admin/secret or user/123456</p>
     </div>
     
-    <div id="dashboardContainer" class="container hidden">
-        <div class="header">
-            <h1>🏪 Modern POS System</h1>
-            <div style="display: flex; gap: 15px; align-items: center;">
-                <span id="userName"></span>
-                <button class="logout-btn" onclick="logout()">Logout</button>
+    <div id="dashboard" style="display:none;">
+        <div class="container">
+            <div class="header">
+                <h1>POS System</h1>
+                <span id="userInfo"></span>
+                <button onclick="logout()">Logout</button>
             </div>
-        </div>
-        <h2>Main Features</h2>
-        <div class="features-grid">
-            <a href="/feature1" class="feature-card">
-                <h3>🛒 Sales Transaction</h3>
-                <p>Process customer purchases, add items to cart, and complete sales.</p>
-            </a>
-            <a href="/feature2" class="feature-card">
-                <h3>🧾 Receipt Generation</h3>
-                <p>Generate professional receipts for customers.</p>
-            </a>
-            <a href="/feature3" class="feature-card">
-                <h3>📊 Sales Reports</h3>
-                <p>View daily sales reports and analytics.</p>
-            </a>
-            <a href="/products" class="feature-card">
-                <h3>📦 Product Management</h3>
-                <p>Add, edit, and delete products (Admin only).</p>
-            </a>
-            <a href="/history" class="feature-card">
-                <h3>📜 Transaction History</h3>
-                <p>View all past transactions.</p>
-            </a>
+            <div class="features">
+                <a href="/feature1" class="feature"><h3>Sales Transaction</h3><p>Process sales</p></a>
+                <a href="/feature2" class="feature"><h3>Receipt Generation</h3><p>View receipts</p></a>
+                <a href="/feature3" class="feature"><h3>Sales Reports</h3><p>View analytics</p></a>
+                <a href="/products" class="feature"><h3>Products</h3><p>Manage products</p></a>
+                <a href="/history" class="feature"><h3>History</h3><p>View transactions</p></a>
+            </div>
         </div>
     </div>
     
     <script>
-        async function checkAuth() {
-            const response = await fetch('/api/check-auth');
-            const data = await response.json();
-            if (data.authenticated) {
-                document.getElementById('loginContainer').classList.add('hidden');
-                document.getElementById('dashboardContainer').classList.remove('hidden');
-                document.getElementById('userName').innerHTML = `Welcome, ${data.username} (${data.role})`;
-            } else {
-                document.getElementById('loginContainer').classList.remove('hidden');
-                document.getElementById('dashboardContainer').classList.add('hidden');
-            }
-        }
-        
         async function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const response = await fetch('/api/login', {
+            const res = await fetch('/api/login', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({username, password})
+                body: JSON.stringify({username: username.value, password: password.value})
             });
-            const data = await response.json();
-            if (data.success) {
-                checkAuth();
-            } else {
-                alert('Login failed: ' + data.message);
-            }
+            const data = await res.json();
+            if(data.success) {
+                document.getElementById('loginBox').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                document.getElementById('userInfo').innerHTML = `Welcome ${data.username} (${data.role})`;
+            } else alert('Login failed');
         }
-        
         async function logout() {
             await fetch('/api/logout', {method: 'POST'});
-            checkAuth();
+            location.reload();
         }
-        
-        checkAuth();
+        fetch('/api/check-auth').then(r=>r.json()).then(data=>{
+            if(data.authenticated) {
+                document.getElementById('loginBox').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+                document.getElementById('userInfo').innerHTML = `Welcome ${data.username} (${data.role})`;
+            }
+        });
     </script>
 </body>
 </html>

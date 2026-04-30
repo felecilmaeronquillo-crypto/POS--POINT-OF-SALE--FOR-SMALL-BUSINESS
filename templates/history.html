@@ -1,217 +1,47 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transaction History - POS System</title>
+    <title>Transaction History</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-        th, td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background: #667eea;
-            color: white;
-        }
-        tr:hover {
-            background: #f5f5f5;
-        }
-        button {
-            background: #6c757d;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        button:hover { background: #5a6268; }
-        .view-btn {
-            background: #28a745;
-            padding: 5px 10px;
-            font-size: 12px;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-        }
-        .modal-content {
-            background: white;
-            margin: 5% auto;
-            padding: 20px;
-            width: 50%;
-            border-radius: 10px;
-            max-height: 80%;
-            overflow-y: auto;
-        }
-        .close {
-            float: right;
-            cursor: pointer;
-            font-size: 28px;
-        }
-        .receipt-text {
-            font-family: monospace;
-            white-space: pre-wrap;
-        }
+        body { font-family: Arial; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #667eea; color: white; }
+        .modal { display: none; position: fixed; z-index: 1; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); }
+        .modal-content { background: white; margin: 5% auto; padding: 20px; width: 50%; border-radius: 10px; }
     </style>
 </head>
 <body>
     <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h1>📜 Transaction History</h1>
-            <button onclick="goBack()">← Back to Dashboard</button>
-        </div>
-        
-        <div id="transactionsTable"></div>
+        <button onclick="location.href='/'">← Back</button>
+        <h1>Transaction History</h1>
+        <div id="transactions"></div>
     </div>
-    
-    <div id="receiptModal" class="modal">
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h2>Transaction Receipt</h2>
-            <div id="modalReceipt" class="receipt-text"></div>
-            <button onclick="printReceipt()">Print Receipt</button>
-        </div>
-    </div>
-    
+    <div id="modal" class="modal"><div class="modal-content"><span onclick="closeModal()" style="float:right;cursor:pointer;">&times;</span><div id="receipt"></div></div></div>
     <script>
-        let currentTransaction = null;
-        
-        async function checkAuth() {
-            const response = await fetch('/api/check-auth');
-            const data = await response.json();
-            if (!data.authenticated || data.role !== 'admin') {
-                window.location.href = '/';
-            }
-            loadTransactions();
-        }
-        
-        async function loadTransactions() {
-            const response = await fetch('/api/transactions');
-            const transactions = await response.json();
-            
-            document.getElementById('transactionsTable').innerHTML = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Date & Time</th>
-                            <th>Items</th>
-                            <th>Subtotal</th>
-                            <th>Discount</th>
-                            <th>Total</th>
-                            <th>Cashier</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${transactions.map(t => `
-                            <tr>
-                                <td>${t.id}</td>
-                                <td>${new Date(t.date).toLocaleString()}</td>
-                                <td>${t.items.length} items</td>
-                                <td>₱${t.subtotal.toFixed(2)}</td>
-                                <td>₱${t.discount_amount.toFixed(2)}</td>
-                                <td><strong>₱${t.total.toFixed(2)}</strong></td>
-                                <td>${t.cashier}</td>
-                                <td><button class="view-btn" onclick="viewReceipt(${t.id})">View Receipt</button></td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
+        async function load() {
+            const res = await fetch('/api/transactions');
+            const t = await res.json();
+            document.getElementById('transactions').innerHTML = `
+                <table><tr><th>ID</th><th>Date</th><th>Items</th><th>Total</th><th>Cashier</th><th>Action</th></tr>
+                ${t.map(tr => `<tr><td>${tr.id}</td><td>${new Date(tr.date).toLocaleString()}</td><td>${tr.items.length}</td><td>₱${tr.total}</td><td>${tr.cashier}</td><td><button onclick="viewReceipt(${tr.id})">View</button></td></tr>`).join('')}
                 </table>
             `;
         }
-        
         async function viewReceipt(id) {
-            const response = await fetch(`/api/transactions/${id}`);
-            currentTransaction = await response.json();
-            
-            const receipt = generateReceiptHTML(currentTransaction);
-            document.getElementById('modalReceipt').innerHTML = receipt;
-            document.getElementById('receiptModal').style.display = 'block';
-        }
-        
-        function generateReceiptHTML(t) {
+            const res = await fetch(`/api/transactions/${id}`);
+            const t = await res.json();
             const date = new Date(t.date);
-            let html = `╔════════════════════════════════════════╗<br>`;
-            html += `║           MODERN POS SYSTEM            ║<br>`;
-            html += `║        123 Business Street, City       ║<br>`;
-            html += `╚════════════════════════════════════════╝<br><br>`;
-            html += `Transaction #: ${t.id}<br>`;
-            html += `Date: ${date.toLocaleDateString()}<br>`;
-            html += `Time: ${date.toLocaleTimeString()}<br>`;
-            html += `Cashier: ${t.cashier}<br>`;
-            html += `─────────────────────────────────────────<br><br>`;
-            html += `ITEMS:<br>`;
-            
-            t.items.forEach(item => {
-                html += `${item.name}<br>`;
-                html += `  ${item.quantity} x ₱${item.price.toFixed(2)} = ₱${(item.price * item.quantity).toFixed(2)}<br>`;
-            });
-            
-            html += `<br>─────────────────────────────────────────<br>`;
-            html += `Subtotal:                    ₱${t.subtotal.toFixed(2)}<br>`;
-            if (t.discount_amount > 0) {
-                html += `Discount:                     -₱${t.discount_amount.toFixed(2)}<br>`;
-            }
-            html += `TOTAL:                       ₱${t.total.toFixed(2)}<br>`;
-            html += `Cash Payment:                ₱${t.payment.toFixed(2)}<br>`;
-            html += `Change:                      ₱${t.change.toFixed(2)}<br>`;
-            html += `═════════════════════════════════════════<br>`;
-            html += `          THANK YOU FOR SHOPPING!<br>`;
-            html += `            Please come again!<br>`;
-            html += `═════════════════════════════════════════`;
-            
-            return html;
+            let html = `<pre>╔════════════════════════════════╗<br>║      MODERN POS SYSTEM       ║<br>╚════════════════════════════════╝<br><br>`;
+            html += `Transaction: ${t.id}<br>Date: ${date.toLocaleString()}<br><br>`;
+            t.items.forEach(i => { html += `${i.name} x${i.quantity} = ₱${i.price * i.quantity}<br>`; });
+            html += `<br>Total: ₱${t.total}<br>Payment: ₱${t.payment}<br>Change: ₱${t.change}<br>════════════════════════════════</pre>`;
+            document.getElementById('receipt').innerHTML = html;
+            document.getElementById('modal').style.display = 'block';
         }
-        
-        function printReceipt() {
-            const receiptContent = document.getElementById('modalReceipt').innerHTML;
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(`
-                <html>
-                <head><title>Receipt ${currentTransaction.id}</title></head>
-                <body style="font-family: monospace; padding: 20px;">${receiptContent}</body>
-                </html>
-            `);
-            printWindow.document.close();
-            printWindow.print();
-        }
-        
-        function closeModal() {
-            document.getElementById('receiptModal').style.display = 'none';
-        }
-        
-        function goBack() {
-            window.location.href = '/';
-        }
-        
-        checkAuth();
+        function closeModal() { document.getElementById('modal').style.display = 'none'; }
+        load();
     </script>
 </body>
 </html>

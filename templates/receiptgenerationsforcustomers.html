@@ -1,154 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Receipt Generation - POS System</title>
+    <title>Receipt Generation</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 20px;
-        }
-        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 10px;
-            padding: 30px;
-        }
-        .receipt-box {
-            background: #f8f9fa;
-            padding: 20px;
-            font-family: monospace;
-            white-space: pre-wrap;
-            border-radius: 5px;
-            margin: 20px 0;
-            max-height: 600px;
-            overflow-y: auto;
-        }
-        button {
-            background: #667eea;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 5px;
-        }
-        button:hover { background: #5a67d8; }
-        .btn-print { background: #28a745; }
-        .btn-back { background: #6c757d; }
-        input, select {
-            padding: 10px;
-            margin: 5px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            width: 100%;
-        }
+        body { font-family: monospace; padding: 20px; background: #f0f0f0; }
+        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 10px; }
+        input, button { padding: 10px; margin: 5px; }
+        .receipt { background: #f8f9fa; padding: 20px; margin-top: 20px; white-space: pre-wrap; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🧾 Receipt Generation</h1>
-        <button class="btn-back" onclick="goBack()">← Back to Dashboard</button>
-        
-        <h3 style="margin-top: 20px;">Search Transaction</h3>
-        <input type="number" id="transactionId" placeholder="Enter Transaction ID">
-        <button onclick="searchTransaction()">View Receipt</button>
-        
-        <div id="receiptContainer"></div>
-        
-        <button class="btn-print" onclick="printReceipt()" style="display: none;" id="printBtn">Print Receipt</button>
+        <button onclick="location.href='/'">← Back</button>
+        <h1>Receipt Generator</h1>
+        <input type="number" id="transId" placeholder="Transaction ID">
+        <button onclick="searchReceipt()">View Receipt</button>
+        <div id="receipt" class="receipt"></div>
     </div>
-    
     <script>
-        async function checkAuth() {
-            const response = await fetch('/api/check-auth');
-            const data = await response.json();
-            if (!data.authenticated) {
-                window.location.href = '/';
-            }
-        }
-        
-        async function searchTransaction() {
-            const id = document.getElementById('transactionId').value;
-            if (!id) {
-                alert('Please enter transaction ID');
-                return;
-            }
-            
-            const response = await fetch(`/api/transactions/${id}`);
-            if (response.status === 404) {
-                alert('Transaction not found');
-                return;
-            }
-            
-            const transaction = await response.json();
-            displayReceipt(transaction);
-        }
-        
-        function displayReceipt(transaction) {
-            const receipt = generateReceiptHTML(transaction);
-            document.getElementById('receiptContainer').innerHTML = `
-                <div class="receipt-box">${receipt}</div>
-            `;
-            document.getElementById('printBtn').style.display = 'block';
-        }
-        
-        function generateReceiptHTML(t) {
+        async function searchReceipt() {
+            const id = document.getElementById('transId').value;
+            const res = await fetch(`/api/transactions/${id}`);
+            if(res.status === 404) { alert('Not found'); return; }
+            const t = await res.json();
             const date = new Date(t.date);
-            let html = `╔════════════════════════════════════════╗<br>`;
-            html += `║           MODERN POS SYSTEM            ║<br>`;
-            html += `║        123 Business Street, City       ║<br>`;
-            html += `╚════════════════════════════════════════╝<br><br>`;
-            html += `Transaction #: ${t.id}<br>`;
-            html += `Date: ${date.toLocaleDateString()}<br>`;
-            html += `Time: ${date.toLocaleTimeString()}<br>`;
-            html += `Cashier: ${t.cashier}<br>`;
-            html += `─────────────────────────────────────────<br><br>`;
-            html += `ITEMS:<br>`;
-            
-            t.items.forEach(item => {
-                html += `${item.name}<br>`;
-                html += `  ${item.quantity} x ₱${item.price.toFixed(2)} = ₱${(item.price * item.quantity).toFixed(2)}<br>`;
-            });
-            
-            html += `<br>─────────────────────────────────────────<br>`;
-            html += `Subtotal:                    ₱${t.subtotal.toFixed(2)}<br>`;
-            if (t.discount_amount > 0) {
-                html += `Discount:                     -₱${t.discount_amount.toFixed(2)}<br>`;
-            }
-            html += `TOTAL:                       ₱${t.total.toFixed(2)}<br>`;
-            html += `Cash Payment:                ₱${t.payment.toFixed(2)}<br>`;
-            html += `Change:                      ₱${t.change.toFixed(2)}<br>`;
-            html += `═════════════════════════════════════════<br>`;
-            html += `          THANK YOU FOR SHOPPING!<br>`;
-            html += `            Please come again!<br>`;
-            html += `═════════════════════════════════════════`;
-            
-            return html;
+            let html = `╔════════════════════════════════╗<br>║      MODERN POS SYSTEM       ║<br>╚════════════════════════════════╝<br><br>`;
+            html += `Transaction #: ${t.id}<br>Date: ${date.toLocaleString()}<br>Cashier: ${t.cashier}<br>────────────────────────<br><br>`;
+            t.items.forEach(item => { html += `${item.name}<br>  ${item.quantity} x ₱${item.price} = ₱${item.price * item.quantity}<br>`; });
+            html += `<br>────────────────────────<br>Subtotal: ₱${t.subtotal}<br>`;
+            if(t.discount_amount > 0) html += `Discount: -₱${t.discount_amount}<br>`;
+            html += `TOTAL: ₱${t.total}<br>Payment: ₱${t.payment}<br>Change: ₱${t.change}<br>════════════════════════════════`;
+            document.getElementById('receipt').innerHTML = `<pre>${html}</pre>`;
         }
-        
-        function printReceipt() {
-            const receiptContent = document.getElementById('receiptContainer').innerHTML;
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(`
-                <html>
-                <head><title>Receipt</title></head>
-                <body style="font-family: monospace; padding: 20px;">${receiptContent}</body>
-                </html>
-            `);
-            printWindow.document.close();
-            printWindow.print();
-        }
-        
-        function goBack() {
-            window.location.href = '/';
-        }
-        
-        checkAuth();
     </script>
 </body>
 </html>
