@@ -1,6 +1,7 @@
 Point of Sale (POS) System for Small Businesses
 
-Title & Description This project is a transaction-based application designed to manage and record sales in small businesses. The system captures product details such as name, quantity, and price during each purchase. It automatically generates receipts and securely stores transaction records for tracking and review. Additionally, it provides daily, weekly, and monthly sales summaries to help business owners monitor revenue and identify sales trends. The system is built incrementally and can be expanded as business needs grow.
+Title & Description
+This project is a transaction-based application designed to manage and record sales in small businesses. The system captures product details such as name, quantity, and price during each purchase. It automatically generates receipts and securely stores transaction records for tracking and review. Additionally, it provides daily, weekly, and monthly sales summaries to help business owners monitor revenue and identify sales trends. The system is built incrementally and can be expanded as business needs grow.
 
 Developers (BSCS-1B)
 
@@ -10,7 +11,8 @@ Lastimado, Dissere S.
 Ronquillo, Felecil Mae O.
 Project Description
 
-Sales Transaction Processing: This is the process of recording and completing a customer's purchase by calculating the total amount, updating stock levels, and saving the transaction details in the system.
+Sales Transaction Processing:
+This is the process of recording and completing a customer's purchase by calculating the total amount, updating stock levels, and saving the transaction details in the system.
 Receipt Generation for Customer: This is the process of creating and providing a receipt to the customer as proof of purchase, showing the items bought, prices, total amount, and payment details.
 Sales Summary and Reporting: This refers to generating reports that summarize sales data, such as total sales, number of transactions, and best-selling products, to help monitor business performance.
 Prerequisites
@@ -37,6 +39,8 @@ Apply discounts (if applicable).
 Process payments (cash or digital).
 Automatically deduct stock after a successful sale.
 Record transaction date and time.
+
+
 Module Description - Module 2: Receipt Generations for Customers.
 
 Automatically create a receipt after each sale.
@@ -44,6 +48,8 @@ Show a detailed list of purchased items.
 Display subtotal, total, and payment received.
 Include transaction date and time.
 Print the receipt or send it digitally and save a copy in the system.
+
+
 Module 3: Sales Summary and Reporting
 
 Create daily and monthly sales reports
