@@ -906,7 +906,7 @@ def history_page():
 
 application = app
 
-if __name__ == '__main__':
+if __name__ == '_main_':
     # Create templates directory if it doesn't exist
     os.makedirs('templates', exist_ok=True)
     app.run(debug=True, port=5000)
