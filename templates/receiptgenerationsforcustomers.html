@@ -248,6 +248,7 @@
             if (currentReceipt) {
                 const printWindow = window.open('', '_blank');
                 printWindow.document.write(`
+                    <!DOCTYPE html>
                     <html>
                     <head>
                         <title>Print Receipt</title>
@@ -270,7 +271,7 @@
                         <script>
                             window.print();
                             window.close();
-                        </script>
+                        <\/script>
                     </body>
                     </html>
                 `);
