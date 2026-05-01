@@ -708,30 +708,24 @@ def remove_from_cart(product_id):
     cart_manager.remove_item(product_id)
     return jsonify({'success': True, 'cart': cart_manager.get_cart()})
 
-@app.route('/api/process-payment', methods=['POST'])
+@app.route('/api/cart/update', methods=['PUT'])
 @login_required
-def process_payment():
-    """Process payment and create transaction"""
+def update_cart_quantity():
+    """Update cart item quantity"""
     data = request.json
-    payment = float(data.get('payment', 0))  # Ensure it's a float
-    discount = data.get('discount')
+    product_id = data.get('product_id')
+    quantity = data.get('quantity')
+    
+    products = pos_controller.get_products()
+    product = next((p for p in products if p['id'] == product_id), None)
+    
+    if not product:
+        return jsonify({'success': False, 'message': 'Product not found'})
     
     cart_manager = CartManager(session)
-    username = session.get('username', 'POS User')
+    success, message = cart_manager.update_quantity(product_id, quantity, product['stock'])
     
-    success, message, receipt = pos_controller.process_payment(
-        cart_manager, discount, payment, username
-    )
-    
-    if success:
-        return jsonify({
-            'success': True,
-            'message': message,
-            'receipt': receipt
-        })
-    else:
-        return jsonify({'success': False, 'message': message})
-
+    return jsonify({'success': success, 'message': message, 'cart': cart_manager.get_cart()})
 # ========== FEATURE 2: RECEIPT GENERATION ==========
 @app.route('/api/process-payment', methods=['POST'])
 @login_required
