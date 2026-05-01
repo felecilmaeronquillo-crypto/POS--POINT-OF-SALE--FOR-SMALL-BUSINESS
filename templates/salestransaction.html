@@ -253,17 +253,34 @@
     </div>
 
     <script>
+        // Mock Database
         let currentUser = null;
         let cart = [];
         let currentDiscount = null;
+        
+        // Product catalog
+        const products = [
+            { id: 1, name: "Classic White T-Shirt", price: 299, stock: 50 },
+            { id: 2, name: "Slim Fit Jeans", price: 899, stock: 35 },
+            { id: 3, name: "Running Shoes", price: 2499, stock: 20 },
+            { id: 4, name: "Leather Wallet", price: 499, stock: 45 },
+            { id: 5, name: "Smart Watch", price: 3999, stock: 15 },
+            { id: 6, name: "Backpack", price: 1299, stock: 25 },
+            { id: 7, name: "Sunglasses", price: 599, stock: 40 },
+            { id: 8, name: "Cap", price: 199, stock: 60 }
+        ];
 
         async function checkAuth() {
-            const response = await fetch('/api/check-auth');
-            const data = await response.json();
-            if (!data.authenticated) {
-                window.location.href = '/';
+            // Mock authentication check
+            const token = localStorage.getItem('authToken');
+            if (!token) {
+                // For demo, auto-login as demo user
+                currentUser = "Demo User";
+                document.getElementById('userName').innerText = currentUser;
+                loadProducts();
+                loadCart();
             } else {
-                currentUser = data.username;
+                currentUser = token;
                 document.getElementById('userName').innerText = currentUser;
                 loadProducts();
                 loadCart();
@@ -271,19 +288,18 @@
         }
 
         async function logout() {
-            await fetch('/api/logout', { method: 'POST' });
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('cart');
             window.location.href = '/';
         }
 
         async function loadProducts() {
-            const response = await fetch('/api/products');
-            const products = await response.json();
             displayProducts(products);
         }
 
-        function displayProducts(products) {
+        function displayProducts(productsList) {
             const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
-            const filtered = products.filter(p => p.name.toLowerCase().includes(searchTerm));
+            const filtered = productsList.filter(p => p.name.toLowerCase().includes(searchTerm));
             
             const grid = document.getElementById('productsGrid');
             grid.innerHTML = filtered.map(p => `
@@ -299,25 +315,55 @@
             const quantity = parseInt(prompt('Enter quantity:', 1));
             if (!quantity || quantity < 1) return;
             
-            const response = await fetch('/api/cart/add', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ product_id: productId, quantity: quantity })
-            });
-            
-            const data = await response.json();
-            if (data.success) {
-                alert(data.message);
-                loadCart();
-            } else {
-                alert(data.message);
+            const product = products.find(p => p.id === productId);
+            if (!product) {
+                alert('Product not found!');
+                return;
             }
+            
+            if (quantity > product.stock) {
+                alert(`Only ${product.stock} items available in stock!`);
+                return;
+            }
+            
+            const existingItem = cart.find(item => item.id === productId);
+            if (existingItem) {
+                const newQuantity = existingItem.quantity + quantity;
+                if (newQuantity > product.stock) {
+                    alert(`Cannot add ${quantity} more. Only ${product.stock - existingItem.quantity} remaining!`);
+                    return;
+                }
+                existingItem.quantity = newQuantity;
+            } else {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    quantity: quantity
+                });
+            }
+            
+            saveCart();
+            loadCart();
+            alert(`${quantity} x ${product.name} added to cart!`);
         }
 
         async function loadCart() {
-            const response = await fetch('/api/cart');
-            cart = await response.json();
+            loadCartFromStorage();
             displayCart();
+        }
+
+        function loadCartFromStorage() {
+            const savedCart = localStorage.getItem('cart');
+            if (savedCart) {
+                cart = JSON.parse(savedCart);
+            } else {
+                cart = [];
+            }
+        }
+
+        function saveCart() {
+            localStorage.setItem('cart', JSON.stringify(cart));
         }
 
         function displayCart() {
@@ -346,29 +392,29 @@
         }
 
         async function updateQuantity(productId, newQuantity) {
-            const response = await fetch('/api/cart/update', {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ product_id: productId, quantity: newQuantity })
-            });
+            if (newQuantity < 1) {
+                removeFromCart(productId);
+                return;
+            }
             
-            const data = await response.json();
-            if (data.success) {
-                cart = data.cart;
+            const product = products.find(p => p.id === productId);
+            if (product && newQuantity > product.stock) {
+                alert(`Only ${product.stock} items available in stock!`);
+                return;
+            }
+            
+            const cartItem = cart.find(item => item.id === productId);
+            if (cartItem) {
+                cartItem.quantity = newQuantity;
+                saveCart();
                 displayCart();
             }
         }
 
         async function removeFromCart(productId) {
-            const response = await fetch(`/api/cart/remove/${productId}`, {
-                method: 'DELETE'
-            });
-            
-            const data = await response.json();
-            if (data.success) {
-                cart = data.cart;
-                displayCart();
-            }
+            cart = cart.filter(item => item.id !== productId);
+            saveCart();
+            displayCart();
         }
 
         function updateTotals() {
@@ -381,10 +427,11 @@
                 } else {
                     total = Math.max(0, subtotal - currentDiscount.value);
                 }
+                total = Math.round(total * 100) / 100;
             }
             
-            document.getElementById('subtotal').innerHTML = `₱${subtotal.toLocaleString()}`;
-            document.getElementById('total').innerHTML = `₱${total.toLocaleString()}`;
+            document.getElementById('subtotal').innerHTML = `₱${subtotal.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            document.getElementById('total').innerHTML = `₱${total.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
             
             const payment = parseFloat(document.getElementById('paymentAmount').value) || 0;
             const change = payment - total;
@@ -392,11 +439,11 @@
             
             if (payment >= total && payment > 0) {
                 changeDiv.style.display = 'block';
-                changeDiv.innerHTML = `💰 Change: ₱${change.toLocaleString()}`;
+                changeDiv.innerHTML = `💰 Change: ₱${change.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
                 changeDiv.style.background = '#d4edda';
             } else if (payment > 0 && payment < total) {
                 changeDiv.style.display = 'block';
-                changeDiv.innerHTML = `⚠️ Need ₱${(total - payment).toLocaleString()} more`;
+                changeDiv.innerHTML = `⚠️ Need ₱${(total - payment).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} more`;
                 changeDiv.style.background = '#f8d7da';
             } else {
                 changeDiv.style.display = 'none';
@@ -405,48 +452,163 @@
 
         function applyDiscount() {
             const type = document.getElementById('discountType').value;
-            const value = parseFloat(document.getElementById('discountValue').value);
+            let value = parseFloat(document.getElementById('discountValue').value);
             
-            if (value > 0) {
-                currentDiscount = { type, value };
-                updateTotals();
-                alert(`${type} discount of ${value} applied!`);
+            if (isNaN(value) || value <= 0) {
+                alert('Please enter a valid discount amount!');
+                return;
             }
+            
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            if (type === 'percentage') {
+                if (value > 100) {
+                    alert('Percentage discount cannot exceed 100%!');
+                    return;
+                }
+                currentDiscount = { type, value };
+                alert(`${value}% discount applied!`);
+            } else {
+                if (value > subtotal) {
+                    alert('Fixed discount cannot exceed subtotal!');
+                    return;
+                }
+                currentDiscount = { type, value };
+                alert(`₱${value} discount applied!`);
+            }
+            
+            updateTotals();
+        }
+
+        function generateReceipt() {
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            let total = subtotal;
+            let discountApplied = null;
+            
+            if (currentDiscount) {
+                if (currentDiscount.type === 'percentage') {
+                    total = subtotal - (subtotal * currentDiscount.value / 100);
+                    discountApplied = `${currentDiscount.value}% off`;
+                } else {
+                    total = Math.max(0, subtotal - currentDiscount.value);
+                    discountApplied = `₱${currentDiscount.value} off`;
+                }
+                total = Math.round(total * 100) / 100;
+            }
+            
+            const payment = parseFloat(document.getElementById('paymentAmount').value);
+            const change = payment - total;
+            
+            return {
+                transactionId: 'TXN-' + Date.now(),
+                date: new Date().toLocaleString(),
+                items: [...cart],
+                subtotal: subtotal,
+                discount: discountApplied,
+                total: total,
+                payment: payment,
+                change: change,
+                cashier: currentUser
+            };
         }
 
         async function processPayment() {
-            const payment = parseFloat(document.getElementById('paymentAmount').value) || 0;
-            
-            const response = await fetch('/api/process-payment', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    payment: payment,
-                    discount: currentDiscount
-                })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                alert(data.message);
-                cart = [];
-                currentDiscount = null;
-                document.getElementById('discountValue').value = '';
-                document.getElementById('paymentAmount').value = '';
-                displayCart();
-                loadProducts();
-                
-                // Store receipt for feature 2
-                localStorage.setItem('lastReceipt', data.receipt);
-            } else {
-                alert(data.message);
+            // Validate cart is not empty
+            if (cart.length === 0) {
+                alert('Cannot process payment. Cart is empty!');
+                return;
             }
+            
+            // Get payment amount
+            const payment = parseFloat(document.getElementById('paymentAmount').value);
+            
+            if (isNaN(payment) || payment <= 0) {
+                alert('Please enter a valid payment amount!');
+                return;
+            }
+            
+            // Calculate total with discount
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            let total = subtotal;
+            
+            if (currentDiscount) {
+                if (currentDiscount.type === 'percentage') {
+                    total = subtotal - (subtotal * currentDiscount.value / 100);
+                } else {
+                    total = Math.max(0, subtotal - currentDiscount.value);
+                }
+                total = Math.round(total * 100) / 100;
+            }
+            
+            // Check if payment is sufficient
+            if (payment < total) {
+                alert(`Insufficient payment! Total amount is ₱${total.toLocaleString(undefined, { minimumFractionDigits: 2 })}. Please enter the correct amount.`);
+                return;
+            }
+            
+            // Check stock availability before processing
+            for (const cartItem of cart) {
+                const product = products.find(p => p.id === cartItem.id);
+                if (!product) {
+                    alert(`Product "${cartItem.name}" no longer exists!`);
+                    return;
+                }
+                if (cartItem.quantity > product.stock) {
+                    alert(`Insufficient stock for "${product.name}". Only ${product.stock} available.`);
+                    return;
+                }
+            }
+            
+            // Update stock quantities
+            for (const cartItem of cart) {
+                const product = products.find(p => p.id === cartItem.id);
+                if (product) {
+                    product.stock -= cartItem.quantity;
+                }
+            }
+            
+            // Generate receipt
+            const receipt = generateReceipt();
+            const change = payment - total;
+            
+            // Store receipt in localStorage for feature 2
+            localStorage.setItem('lastReceipt', JSON.stringify(receipt));
+            
+            // Clear cart and discount
+            cart = [];
+            currentDiscount = null;
+            saveCart();
+            
+            // Reset form fields
+            document.getElementById('discountValue').value = '';
+            document.getElementById('paymentAmount').value = '';
+            document.getElementById('discountType').value = 'percentage';
+            
+            // Refresh displays
+            displayCart();
+            loadProducts();
+            
+            // Show success message with receipt details
+            let message = `✅ Payment Successful!\n\n`;
+            message += `Total Amount: ₱${total.toLocaleString(undefined, { minimumFractionDigits: 2 })}\n`;
+            message += `Cash Received: ₱${payment.toLocaleString(undefined, { minimumFractionDigits: 2 })}\n`;
+            message += `Change: ₱${change.toLocaleString(undefined, { minimumFractionDigits: 2 })}\n\n`;
+            message += `Transaction ID: ${receipt.transactionId}\n`;
+            message += `Date: ${receipt.date}\n`;
+            message += `Cashier: ${currentUser}\n\n`;
+            message += `Thank you for your purchase! 🛍️`;
+            
+            alert(message);
+            
+            // Optional: Print receipt to console for debugging
+            console.log('Receipt saved:', receipt);
         }
 
+        // Event listeners
         document.getElementById('searchInput')?.addEventListener('input', () => loadProducts());
         document.getElementById('paymentAmount')?.addEventListener('input', updateTotals);
         
+        // Initialize
         checkAuth();
     </script>
 </body>
