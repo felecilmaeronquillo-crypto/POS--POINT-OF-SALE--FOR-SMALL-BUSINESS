@@ -1,13 +1,17 @@
 POINT OF SALE (POS) SYSTEM FOR SMALL BUSINESSES
 
 Title & Description:
+
 This project is a transaction-based application designed to manage and record sales in small businesses. The system captures product details such as name, quantity, and price during each purchase. It automatically generates receipts and securely stores transaction records for tracking and review. Additionally, it provides daily, weekly, and monthly sales summaries to help business owners monitor revenue and identify sales trends. The system is built incrementally and can be expanded as business needs grow.
 
 Developers (BSCS-1B)
 
 Requierme, Shella Mae B.
+
 Lamoste, Nestle Marie V.
+
 Lastimado, Dissere S.
+
 Ronquillo, Felecil Mae O.
 
 
