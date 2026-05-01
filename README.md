@@ -6,6 +6,7 @@ This project is a transaction-based application designed to manage and record sa
 Developers (BSCS-1B)
 
 Requierme, Shella Mae B.
+
 Lamoste, Nestle Marie V.
 Lastimado, Dissere S.
 Ronquillo, Felecil Mae O.
