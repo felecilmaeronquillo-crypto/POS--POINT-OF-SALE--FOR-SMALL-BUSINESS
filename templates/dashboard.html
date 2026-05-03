@@ -88,6 +88,7 @@
             align-items: center;
             gap: 1rem;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
         }
         .logout-btn {
             background: #dc2626;
@@ -160,7 +161,7 @@
             <button onclick="login()">Login</button>
             <div id="loginError" class="error"></div>
             <p style="text-align: center; margin-top: 1rem; font-size: 0.8rem; color: #666;">
-            
+                Admin: admin / admin123 | User: user / user123
             </p>
         </div>
 
@@ -286,21 +287,22 @@
         }
         
         async function loadStats() {
-            const response = await fetch('/api/reports/analytics');
-            const data = await response.json();
-            
-            document.getElementById('totalRevenue').innerText = `₱${data.total_revenue.toLocaleString()}`;
-            document.getElementById('totalTransactions').innerText = data.total_transactions;
-            
-            const productsRes = await fetch('/api/products');
-            const products = await productsRes.json();
-            document.getElementById('totalProducts').innerText = products.length;
-            
-            // Calculate today's revenue
-            const today = new Date().toISOString().split('T')[0];
-            const dailyRes = await fetch(`/api/reports/daily?date=${today}`);
-            const dailyData = await dailyRes.json();
-            document.getElementById('todayRevenue').innerText = `₱${dailyData.total_revenue.toLocaleString()}`;
+            try {
+                const response = await fetch('/api/analytics');
+                const data = await response.json();
+                
+                document.getElementById('totalRevenue').innerText = `₱${data.total_revenue.toLocaleString()}`;
+                document.getElementById('totalTransactions').innerText = data.total_transactions;
+                document.getElementById('totalProducts').innerText = data.total_products;
+                
+                // Calculate today's revenue
+                const today = new Date().toISOString().split('T')[0];
+                const dailyRes = await fetch(`/api/reports/daily?date=${today}`);
+                const dailyData = await dailyRes.json();
+                document.getElementById('todayRevenue').innerText = `₱${dailyData.total_revenue.toLocaleString()}`;
+            } catch(e) {
+                console.error('Error loading stats:', e);
+            }
         }
         
         function navigateTo(path) {
