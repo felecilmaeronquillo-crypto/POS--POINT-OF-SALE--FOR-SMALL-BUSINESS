@@ -1,12 +1,12 @@
 # app.py - Vercel-compatible POS System Backend
-from flask import Flask, request, jsonify, session, send_from_directory
+from flask import Flask, request, jsonify, session, render_template
 from datetime import datetime, timedelta
 import json
 import os
 from functools import wraps
 from abc import ABC, abstractmethod
 
-app = Flask(__name__, static_folder='static', template_folder='templates')
+app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'your-secret-key-here')
 app.config['SESSION_TYPE'] = 'filesystem'
 
@@ -70,7 +70,7 @@ class InMemoryDataStorage:
 class AuthManager:
     def __init__(self):
         self.__users = {
-            'admin': {'password': 'admin123', 'role': 'admin'},  # Changed password
+            'admin': {'password': 'admin123', 'role': 'admin'},
             'user': {'password': 'user123', 'role': 'user'}
         }
     
@@ -264,6 +264,16 @@ class POSController:
             'total_products': len(products),
             'low_stock_products': [p for p in products if p['stock'] < 10]
         }
+    
+    def get_daily_revenue(self, date_str):
+        """Get revenue for a specific date (YYYY-MM-DD)"""
+        transactions = self.storage.get_transactions()
+        total = 0
+        for t in transactions:
+            trans_date = datetime.fromisoformat(t['date']).strftime('%Y-%m-%d')
+            if trans_date == date_str:
+                total += t['total']
+        return total
 
 # ========== FLASK ROUTES ==========
 pos_controller = POSController()
@@ -386,6 +396,23 @@ def remove_from_cart(product_id):
     cart_manager.remove_item(product_id)
     return jsonify({'success': True, 'cart': cart_manager.get_cart()})
 
+@app.route('/api/cart/update/<int:product_id>', methods=['PUT'])
+@login_required
+def update_cart_quantity(product_id):
+    data = request.json
+    quantity = data.get('quantity', 1)
+    
+    products = pos_controller.get_products()
+    product = next((p for p in products if p['id'] == product_id), None)
+    
+    if not product:
+        return jsonify({'success': False, 'message': 'Product not found'}), 404
+    
+    cart_manager = CartManager(session)
+    success, message = cart_manager.update_quantity(product_id, quantity, product['stock'])
+    
+    return jsonify({'success': success, 'message': message, 'cart': cart_manager.get_cart()})
+
 @app.route('/api/process-payment', methods=['POST'])
 @login_required
 def process_payment():
@@ -412,14 +439,42 @@ def get_transactions():
 def get_analytics():
     return jsonify(pos_controller.get_analytics())
 
-# Serve HTML files
+@app.route('/api/reports/daily', methods=['GET'])
+@login_required
+def get_daily_revenue():
+    date_str = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))
+    total = pos_controller.get_daily_revenue(date_str)
+    return jsonify({'date': date_str, 'total_revenue': total})
+
+# ========== PAGE ROUTES ==========
 @app.route('/')
 def index():
-    return send_from_directory('templates', 'dashboard.html')
+    return render_template('dashboard.html')
 
-@app.route('/<path:filename>')
-def serve_static(filename):
-    return send_from_directory('templates', filename)
+@app.route('/feature1')
+@login_required
+def feature1():
+    return render_template('salestransaction.html')
+
+@app.route('/feature2')
+@login_required
+def feature2():
+    return render_template('receiptgenerationsforcustomers.html')
+
+@app.route('/feature3')
+@login_required
+def feature3():
+    return render_template('salessummaryandreporting.html')
+
+@app.route('/products')
+@admin_required
+def products_page():
+    return render_template('products.html')
+
+@app.route('/history')
+@admin_required
+def history_page():
+    return render_template('history.html')
 
 # For Vercel
 application = app
