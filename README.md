@@ -20,7 +20,7 @@ PROJECT DESCRIPTION:
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Sales Transaction Processing:
 This is the process of recording and completing a customer's purchase by calculating the total amount, updating stock levels, and saving the transaction details in the system.
-Receipt Generation for Customer: This is the process of creating and providing a receipt to the customer as proof of purchase, showing the items bought, prices, total amount, and payment details.
+Receipt Generation for customer: This is the process of creating and providing a receipt to the customer as proof of purchase, showing the items bought, prices, total amount, and payment details.
 Sales Summary and Reporting: This refers to generating reports that summarize sales data, such as total sales, number of transactions, and best-selling products, to help monitor business performance.
 
 
