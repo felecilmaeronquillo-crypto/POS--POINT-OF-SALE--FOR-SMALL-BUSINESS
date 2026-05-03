@@ -2,833 +2,377 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>FEATURE 1: Sales Transaction System | POS Solution</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Transaction - POS System</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
-            padding: 1rem;
+            padding: 2rem;
         }
-
         .container {
             max-width: 1400px;
             margin: 0 auto;
         }
-
-        /* Header Styles */
         .header {
-            background: rgba(255,255,255,0.98);
-            backdrop-filter: blur(4px);
-            border-radius: 28px;
-            padding: 0.9rem 1.8rem;
-            margin-bottom: 1.8rem;
+            background: white;
+            border-radius: 20px;
+            padding: 1rem 2rem;
+            margin-bottom: 2rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 0.8rem;
-            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.2);
-            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
-
         .back-btn {
-            background: linear-gradient(95deg, #4f46e5, #7c3aed);
+            background: #667eea;
             color: white;
-            border: none;
-            padding: 0.5rem 1.2rem;
-            border-radius: 40px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            text-decoration: none;
         }
-
-        .back-btn:hover {
-            transform: scale(1.02);
-            background: linear-gradient(95deg, #6366f1, #8b5cf6);
-        }
-
-        .feature-badge {
-            background: linear-gradient(120deg, #f59e0b, #d97706);
-            color: white;
-            padding: 0.4rem 1.2rem;
-            border-radius: 40px;
-            font-size: 0.85rem;
-            font-weight: bold;
-            letter-spacing: 0.5px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-        }
-
-        #userInfo {
-            display: flex;
-            gap: 0.8rem;
-            align-items: center;
-            background: #f1f5f9;
-            padding: 0.3rem 1rem 0.3rem 1.2rem;
-            border-radius: 50px;
-        }
-
-        #userName {
-            font-weight: 600;
-            color: #1e293b;
-        }
-
-        /* two columns layout */
-        .two-columns {
+        .main-content {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 1.6rem;
+            gap: 2rem;
         }
-
-        /* Cards */
-        .card {
+        .products-panel, .cart-panel {
             background: white;
-            border-radius: 28px;
-            padding: 1.3rem 1.5rem;
-            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.25);
-            transition: transform 0.1s ease;
-            backdrop-filter: blur(2px);
-            border: 1px solid rgba(255,255,255,0.5);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
-
-        .card-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            padding-bottom: 0.6rem;
-            border-bottom: 3px solid #e2e8f0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            background: linear-gradient(135deg, #1f2937, #374151);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: #1e293b;
-        }
-
-        .search-box {
-            width: 100%;
-            padding: 0.7rem 1rem;
-            border: 2px solid #e2e8f0;
-            border-radius: 60px;
-            margin-bottom: 1.2rem;
-            font-size: 0.9rem;
-            transition: all 0.2s;
-            background: #fefefe;
-        }
-
-        .search-box:focus {
-            outline: none;
-            border-color: #8b5cf6;
-            box-shadow: 0 0 0 3px rgba(139,92,246,0.2);
-        }
-
-        /* Products Grid Fixed Scroll */
         .products-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
             gap: 1rem;
-            max-height: 520px;
+            margin-top: 1rem;
+            max-height: 500px;
             overflow-y: auto;
-            padding: 0.2rem 0.2rem 0.5rem 0;
         }
-
-        .products-grid::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .products-grid::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 8px;
-        }
-
-        .products-grid::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 8px;
-        }
-
         .product-card {
-            background: #f9fafb;
-            border-radius: 20px;
-            padding: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-            border: 1px solid #eef2ff;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            padding: 1rem;
             text-align: center;
+            cursor: pointer;
+            transition: transform 0.2s;
         }
-
         .product-card:hover {
-            transform: translateY(-5px);
-            border-color: #8b5cf6;
-            background: white;
-            box-shadow: 0 12px 20px -12px rgba(0,0,0,0.2);
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
-
-        .product-name {
-            font-weight: 800;
-            font-size: 1rem;
-            margin-bottom: 0.6rem;
-            color: #0f172a;
-        }
-
-        .product-price {
-            color: #10b981;
-            font-weight: 800;
-            font-size: 1.2rem;
-        }
-
-        .product-stock {
-            font-size: 0.7rem;
-            color: #64748b;
-            margin-top: 0.6rem;
-            font-weight: 500;
-        }
-
-        /* Cart Items */
+        .product-name { font-weight: bold; font-size: 1.1rem; }
+        .product-price { color: #667eea; font-weight: bold; margin: 0.5rem 0; }
+        .product-stock { font-size: 0.8rem; color: #666; }
         .cart-items {
-            max-height: 330px;
+            max-height: 400px;
             overflow-y: auto;
-            margin-bottom: 0.8rem;
+            margin-bottom: 1rem;
         }
-
         .cart-item {
-            background: #f8fafc;
-            border-radius: 20px;
-            padding: 0.9rem;
-            margin-bottom: 0.8rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-left: 5px solid #8b5cf6;
-            transition: 0.1s;
+            padding: 0.5rem;
+            border-bottom: 1px solid #eee;
         }
-
-        .cart-item-controls {
+        .cart-item-info { flex: 1; }
+        .cart-item-name { font-weight: bold; }
+        .cart-item-price { font-size: 0.9rem; color: #666; }
+        .cart-item-quantity {
             display: flex;
-            gap: 8px;
             align-items: center;
+            gap: 0.5rem;
         }
-
-        .qty-btn {
-            width: 32px;
-            height: 32px;
-            border: none;
-            border-radius: 40px;
-            background: #4f46e5;
-            color: white;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1.1rem;
-            transition: 0.1s;
+        .cart-item-quantity input {
+            width: 60px;
+            padding: 0.25rem;
+            text-align: center;
         }
-
-        .qty-btn:active {
-            transform: scale(0.96);
-        }
-
+        .cart-item-total { font-weight: bold; margin: 0 1rem; min-width: 80px; text-align: right; }
         .remove-btn {
-            background: #ef4444;
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 5px;
+            cursor: pointer;
         }
-
+        .cart-summary {
+            border-top: 2px solid #ddd;
+            padding-top: 1rem;
+            margin-top: 1rem;
+        }
         .summary-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 0.9rem;
-            font-size: 1rem;
-            font-weight: 500;
+            margin: 0.5rem 0;
         }
-
-        .total {
-            font-size: 1.5rem;
-            font-weight: 800;
-            color: #059669;
+        .discount-section {
+            margin: 1rem 0;
+            padding: 1rem;
+            background: #f5f5f5;
+            border-radius: 10px;
         }
-
-        .discount-row {
-            display: flex;
-            gap: 0.6rem;
-            margin-bottom: 1rem;
-            flex-wrap: wrap;
+        .payment-section {
+            margin: 1rem 0;
         }
-
-        .discount-row select, .discount-row input {
-            flex: 1;
-            padding: 0.6rem;
-            border-radius: 40px;
-            border: 1.5px solid #e2e8f0;
-            font-size: 0.9rem;
+        .payment-section input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-size: 1.1rem;
         }
-
-        .btn-primary {
-            background: #f59e0b;
-            color: #422006;
-            font-weight: bold;
-            padding: 0.5rem 1rem;
-            border: none;
-            border-radius: 40px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .btn-primary:hover {
-            background: #d97706;
-            transform: scale(0.97);
-        }
-
-        .payment-row {
-            display: flex;
-            gap: 0.7rem;
-            margin-top: 0.9rem;
-            align-items: center;
-        }
-
-        .payment-row input {
-            flex: 2;
-            padding: 0.7rem;
-            border-radius: 50px;
-            border: 1.5px solid #cbd5e1;
-            font-size: 1rem;
-        }
-
-        .payment-row button {
-            flex: 1;
+        .process-btn {
+            width: 100%;
+            padding: 1rem;
             background: #10b981;
             color: white;
             border: none;
-            border-radius: 50px;
-            padding: 0.7rem;
-            font-weight: bold;
+            border-radius: 10px;
+            font-size: 1.1rem;
             cursor: pointer;
-            transition: 0.2s;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            margin-top: 1rem;
         }
-
-        .payment-row button:hover {
-            background: #059669;
-        }
-
-        .change-display {
-            margin-top: 0.8rem;
-            padding: 0.7rem;
-            border-radius: 60px;
+        .message {
+            padding: 0.5rem;
+            margin: 0.5rem 0;
+            border-radius: 10px;
             text-align: center;
-            font-weight: bold;
-            display: none;
-            font-size: 1rem;
         }
-
-        @media (max-width: 780px) {
-            .two-columns {
-                grid-template-columns: 1fr;
-                gap: 1.2rem;
-            }
-            .header {
-                flex-direction: column;
-                text-align: center;
-            }
-            .product-card {
-                padding: 0.6rem;
-            }
-        }
-
-        .empty-cart-placeholder {
-            text-align: center;
-            padding: 2rem;
-            color: #94a3b8;
-            font-weight: 500;
-            background: #f1f5f9;
-            border-radius: 28px;
-        }
-
-        button {
-            cursor: pointer;
-        }
-        .receipt-toast {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: #1e293b;
-            color: white;
-            padding: 12px 18px;
-            border-radius: 40px;
-            font-size: 13px;
-            z-index: 999;
-            backdrop-filter: blur(8px);
-            box-shadow: 0 8px 20px black;
-            animation: fadeOut 4s forwards;
-            pointer-events: none;
-        }
-        @keyframes fadeOut {
-            0% { opacity: 1; transform: translateY(0);}
-            70% { opacity: 1;}
-            100% { opacity: 0; visibility: hidden; transform: translateY(20px);}
+        .success { background: #d1fae5; color: #065f46; }
+        .error { background: #fee2e2; color: #991b1b; }
+        h3 { margin-bottom: 1rem; color: #333; }
+        .search-box {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 10px;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <button class="back-btn" onclick="window.location.href='/'">← Back to Dashboard</button>
-            <span class="feature-badge">🎯 FEATURE 1: Sales Transaction System</span>
-            <div id="userInfo" style="display: flex; gap: 0.5rem; align-items: center;">
-                <span id="userName"></span>
-                <button class="back-btn" onclick="logout()" style="background: #dc2626; padding: 0.3rem 1rem;">Logout</button>
-            </div>
+            <h2>🛒 Sales Transaction</h2>
+            <a href="/" class="back-btn">← Back to Dashboard</a>
         </div>
-
-        <div class="two-columns">
-            <!-- Products Panel -->
-            <div class="card">
-                <div class="card-title">🛍️ Products Catalog</div>
-                <input type="text" id="searchInput" class="search-box" placeholder="🔍 Search products by name...">
+        
+        <div class="main-content">
+            <div class="products-panel">
+                <h3>Products</h3>
+                <input type="text" id="searchInput" class="search-box" placeholder="Search products...">
                 <div id="productsGrid" class="products-grid"></div>
             </div>
-
-            <!-- Cart & Checkout Panel -->
-            <div class="card">
-                <div class="card-title">🛒 Shopping Cart</div>
+            
+            <div class="cart-panel">
+                <h3>Shopping Cart</h3>
                 <div id="cartItems" class="cart-items"></div>
-                
-                <div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 2px solid #eef2ff;">
+                <div class="cart-summary">
                     <div class="summary-row">
-                        <span>Subtotal:</span>
+                        <strong>Subtotal:</strong>
                         <span id="subtotal">₱0.00</span>
                     </div>
-                    
-                    <div class="discount-row">
-                        <select id="discountType">
-                            <option value="percentage">Percentage (%)</option>
-                            <option value="fixed">Fixed (₱)</option>
-                        </select>
-                        <input type="number" id="discountValue" placeholder="0" step="any" value="">
-                        <button class="btn-primary" onclick="applyDiscount()">Apply</button>
-                        <button class="btn-primary" style="background:#e2e8f0; color:#334155;" onclick="clearDiscount()">Clear</button>
+                    <div class="discount-section">
+                        <label for="discountPercent">Discount (%):</label>
+                        <input type="number" id="discountPercent" value="0" min="0" max="100" step="1" title="Discount percentage" placeholder="0">
                     </div>
-                    
                     <div class="summary-row">
-                        <span><strong>Total:</strong></span>
-                        <span id="total" class="total">₱0.00</span>
+                        <strong>Total:</strong>
+                        <span id="total" style="font-size: 1.3rem; color: #667eea;">₱0.00</span>
                     </div>
-                    
-                    <div class="payment-row">
-                        <input type="number" id="paymentAmount" placeholder="Enter cash amount" step="any" min="0">
-                        <button onclick="processPayment()">✅ Process Payment</button>
+                    <div class="payment-section">
+                        <input type="number" id="paymentAmount" placeholder="Enter payment amount">
                     </div>
-                    
-                    <div id="changeDisplay" class="change-display"></div>
-                    <div style="margin-top: 0.7rem; font-size: 0.7rem; text-align: center; color:#6c757d;">✔️ Click product to add to cart</div>
+                    <button class="process-btn" onclick="processPayment()">Process Payment</button>
+                    <div id="message"></div>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!-- Receipt Modal -->
+    <div id="receiptModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000;">
+        <div style="background: white; border-radius: 20px; padding: 2rem; max-width: 500px; max-height: 80vh; overflow-y: auto;">
+            <h3>Receipt</h3>
+            <pre id="receiptContent" style="font-family: monospace; white-space: pre-wrap;"></pre>
+            <button onclick="closeReceipt()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #667eea; color: white; border: none; border-radius: 10px; cursor: pointer;">Close</button>
+            <button onclick="printReceipt()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #10b981; color: white; border: none; border-radius: 10px; cursor: pointer;">Print Receipt</button>
+        </div>
+    </div>
 
     <script>
-        // ------------------- FIXED AND FULLY FUNCTIONAL SALES TRANSACTION SYSTEM ------------------
-        // Simulates backend APIs with localStorage for persistence, fully self-contained
-        let currentUser = null;
-        let cart = [];          // each item: { id, name, price, quantity, stock_available }
-        let currentDiscount = null;   // { type, value }
+        let products = [];
         
-        // Mock product catalog (database)
-        let productsCatalog = [
-            { id: 1, name: "Classic Backpack", price: 1299, stock: 25 },
-            { id: 2, name: "Wireless Mouse", price: 450, stock: 68 },
-            { id: 3, name: "Mechanical Keyboard", price: 2890, stock: 32 },
-            { id: 4, name: "USB-C Hub", price: 890, stock: 15 },
-            { id: 5, name: "Noise Cancelling Earbuds", price: 2150, stock: 41 },
-            { id: 6, name: "Fast Charger 65W", price: 1099, stock: 27 },
-            { id: 7, name: "Laptop Stand", price: 750, stock: 19 },
-            { id: 8, name: "Gaming Chair", price: 8490, stock: 8 }
-        ];
-
-        // Helper: Save cart to localStorage with user session
-        function persistCart() {
-            if(currentUser) {
-                localStorage.setItem(`cart_${currentUser}`, JSON.stringify(cart));
-                localStorage.setItem(`discount_${currentUser}`, JSON.stringify(currentDiscount));
-            }
+        async function loadProducts() {
+            const response = await fetch('/api/products');
+            products = await response.json();
+            renderProducts();
         }
-
-        function loadCartFromStorage() {
-            if(currentUser) {
-                const savedCart = localStorage.getItem(`cart_${currentUser}`);
-                const savedDiscount = localStorage.getItem(`discount_${currentUser}`);
-                if(savedCart) {
-                    try {
-                        cart = JSON.parse(savedCart);
-                        // ensure each cart item has latest price info from products? we sync price from catalog for consistency
-                        syncCartWithCatalog();
-                    } catch(e) { cart = []; }
-                } else {
-                    cart = [];
-                }
-                if(savedDiscount && savedDiscount !== "null") {
-                    currentDiscount = JSON.parse(savedDiscount);
-                } else {
-                    currentDiscount = null;
-                }
-            } else {
-                cart = [];
-                currentDiscount = null;
-            }
-            displayCart();
-        }
-
-        // ensure cart product names/prices match current catalog (avoid stale data)
-        function syncCartWithCatalog() {
-            for(let i=0; i<cart.length; i++) {
-                const product = productsCatalog.find(p => p.id === cart[i].id);
-                if(product) {
-                    cart[i].name = product.name;
-                    cart[i].price = product.price;
-                    cart[i].stock_available = product.stock;
-                } else {
-                    // product removed? remove from cart
-                    cart.splice(i,1);
-                    i--;
-                }
-            }
-            persistCart();
-        }
-
-        // Simulate auth check (demo: login simulation from parent dashboard). 
-        // For standalone behavior, we set default demo user 'Cashier' to showcase feature.
-        async function checkAuth() {
-            // This demo works standalone, but respects /api/check-auth if exists.
-            // For pure frontend simulation, we set a dummy user to enable cart persistence.
-            try {
-                const response = await fetch('/api/check-auth');
-                if(response.ok) {
-                    const data = await response.json();
-                    if(data.authenticated) {
-                        currentUser = data.username;
-                        document.getElementById('userName').innerText = currentUser;
-                        loadCartFromStorage();
-                        renderProducts();
-                        return;
-                    }
-                }
-                throw new Error("No backend auth");
-            } catch(e) {
-                // Fallback demo mode: local user for full functionality
-                currentUser = "local_cashier";
-                document.getElementById('userName').innerText = "Cashier (Demo)";
-                loadCartFromStorage();
-                renderProducts();
-            }
-        }
-
-        async function logout() {
-            if(window.location.pathname !== '/') {
-                // attempt backend logout if exists
-                try { await fetch('/api/logout', { method: 'POST' }); } catch(e) {}
-            }
-            localStorage.removeItem(`cart_${currentUser}`);
-            localStorage.removeItem(`discount_${currentUser}`);
-            window.location.href = '/';
-        }
-
+        
         function renderProducts() {
-            displayProducts(productsCatalog);
-        }
-
-        function displayProducts(products) {
-            const searchTerm = document.getElementById('searchInput')?.value.toLowerCase() || '';
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const filtered = products.filter(p => p.name.toLowerCase().includes(searchTerm));
             
             const grid = document.getElementById('productsGrid');
-            if(!grid) return;
-            if(filtered.length === 0){
-                grid.innerHTML = '<div style="text-align:center; padding:2rem; color:#94a3b8;">✨ No products found</div>';
-                return;
-            }
-            grid.innerHTML = filtered.map(p => `
-                <div class="product-card" onclick="addToCart(${p.id})">
-                    <div class="product-name">${escapeHtml(p.name)}</div>
-                    <div class="product-price">₱${p.price.toLocaleString()}</div>
-                    <div class="product-stock">📦 Stock: ${p.stock} units</div>
+            grid.innerHTML = filtered.map(product => `
+                <div class="product-card" onclick="addToCart(${product.id})">
+                    <div class="product-name">${product.name}</div>
+                    <div class="product-price">₱${product.price.toLocaleString()}</div>
+                    <div class="product-stock">Stock: ${product.stock}</div>
                 </div>
             `).join('');
         }
-
-        function escapeHtml(str) {
-            if(!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if(m === '&') return '&amp;';
-                if(m === '<') return '&lt;';
-                if(m === '>') return '&gt;';
-                return m;
-            });
-        }
-
+        
         async function addToCart(productId) {
-            const product = productsCatalog.find(p => p.id === productId);
-            if(!product) { alert("Product not found"); return; }
-            
-            let quantity = parseInt(prompt(`Enter quantity for ${product.name}:`, 1));
-            if(isNaN(quantity) || quantity <= 0) return;
-            
-            // validate stock
-            const currentCartItem = cart.find(item => item.id === productId);
-            const currentlyInCart = currentCartItem ? currentCartItem.quantity : 0;
-            const availableStock = product.stock;
-            
-            if(quantity + currentlyInCart > availableStock) {
-                alert(`❌ Stock insufficient! Only ${availableStock} available. You already have ${currentlyInCart} in cart.`);
-                return;
-            }
-            
-            if(currentCartItem) {
-                currentCartItem.quantity += quantity;
+            const response = await fetch('/api/cart/add', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ product_id: productId, quantity: 1 })
+            });
+            const data = await response.json();
+            if (data.success) {
+                showMessage(data.message, 'success');
+                loadCart();
             } else {
-                cart.push({
-                    id: product.id,
-                    name: product.name,
-                    price: product.price,
-                    quantity: quantity,
-                    stock_available: product.stock
-                });
+                showMessage(data.message, 'error');
             }
-            persistCart();
-            displayCart();
-            showTemporaryMessage(`🛒 Added ${quantity}x ${product.name}`, "#10b981");
         }
-
-        function displayCart() {
+        
+        async function loadCart() {
+            const response = await fetch('/api/cart');
+            const cart = await response.json();
+            renderCart(cart);
+            updateTotals();
+        }
+        
+        function renderCart(cart) {
             const container = document.getElementById('cartItems');
-            if(!container) return;
+            if (cart.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #666;">Cart is empty</p>';
+                return;
+            }
             
-            if(cart.length === 0) {
-                container.innerHTML = '<div class="empty-cart-placeholder">🛍️ Cart is empty. Add products from the catalog.</div>';
-            } else {
-                container.innerHTML = cart.map(item => `
-                    <div class="cart-item">
-                        <div>
-                            <strong>${escapeHtml(item.name)}</strong><br>
-                            ₱${item.price.toLocaleString()} each
-                        </div>
-                        <div class="cart-item-controls">
-                            <button class="qty-btn" onclick="updateQty(${item.id}, ${item.quantity - 1})">-</button>
-                            <span style="min-width: 35px; text-align: center; font-weight: bold;">${item.quantity}</span>
-                            <button class="qty-btn" onclick="updateQty(${item.id}, ${item.quantity + 1})">+</button>
-                            <button class="qty-btn remove-btn" onclick="removeItem(${item.id})">✕</button>
-                        </div>
+            container.innerHTML = cart.map(item => `
+                <div class="cart-item">
+                    <div class="cart-item-info">
+                        <div class="cart-item-name">${item.name}</div>
+                        <div class="cart-item-price">₱${item.price.toLocaleString()}</div>
                     </div>
-                `).join('');
-            }
-            updateTotalsAndChange();
+                    <div class="cart-item-quantity">
+                        <button onclick="updateQuantity(${item.id}, ${item.quantity - 1})">-</button>
+                        <input type="number" value="${item.quantity}" min="0" onchange="updateQuantity(${item.id}, this.value)">
+                        <button onclick="updateQuantity(${item.id}, ${item.quantity + 1})">+</button>
+                    </div>
+                    <div class="cart-item-total">₱${(item.price * item.quantity).toLocaleString()}</div>
+                    <button class="remove-btn" onclick="removeFromCart(${item.id})">✕</button>
+                </div>
+            `).join('');
         }
-
-        function updateQty(productId, newQuantity) {
-            const cartIndex = cart.findIndex(item => item.id === productId);
-            if(cartIndex === -1) return;
-            const productOriginal = productsCatalog.find(p => p.id === productId);
-            if(!productOriginal) return;
+        
+        async function updateQuantity(productId, quantity) {
+            quantity = parseInt(quantity);
+            if (isNaN(quantity) || quantity < 0) quantity = 0;
             
-            if(newQuantity <= 0) {
-                removeItem(productId);
-                return;
-            }
-            const maxStock = productOriginal.stock;
-            if(newQuantity > maxStock) {
-                alert(`❌ Cannot exceed stock limit (${maxStock} available).`);
-                return;
-            }
-            cart[cartIndex].quantity = newQuantity;
-            persistCart();
-            displayCart();
-        }
-
-        function removeItem(productId) {
-            cart = cart.filter(item => item.id !== productId);
-            persistCart();
-            displayCart();
-        }
-
-        function updateTotalsAndChange() {
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            let totalAfterDiscount = subtotal;
-            if(currentDiscount) {
-                if(currentDiscount.type === 'percentage') {
-                    totalAfterDiscount = subtotal - (subtotal * currentDiscount.value / 100);
-                } else {
-                    totalAfterDiscount = Math.max(0, subtotal - currentDiscount.value);
-                }
-            }
-            totalAfterDiscount = Math.round(totalAfterDiscount * 100) / 100;
-            document.getElementById('subtotal').innerHTML = `₱${subtotal.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})}`;
-            document.getElementById('total').innerHTML = `₱${totalAfterDiscount.toLocaleString(undefined, {minimumFractionDigits:2})}`;
-            
-            const paymentRaw = document.getElementById('paymentAmount')?.value;
-            const payment = parseFloat(paymentRaw) || 0;
-            const change = payment - totalAfterDiscount;
-            const changeDiv = document.getElementById('changeDisplay');
-            if(!changeDiv) return;
-            
-            if(payment >= totalAfterDiscount && payment > 0) {
-                changeDiv.style.display = 'block';
-                changeDiv.style.backgroundColor = '#d1fae5';
-                changeDiv.style.color = '#065f46';
-                changeDiv.innerHTML = `💰 Change: ₱${change.toLocaleString(undefined, {minimumFractionDigits:2})}`;
-            } else if(payment > 0 && payment < totalAfterDiscount) {
-                changeDiv.style.display = 'block';
-                changeDiv.style.backgroundColor = '#fee2e2';
-                changeDiv.style.color = '#991b1b';
-                changeDiv.innerHTML = `⚠️ Insufficient: Need ₱${(totalAfterDiscount - payment).toLocaleString(undefined, {minimumFractionDigits:2})} more`;
+            const response = await fetch(`/api/cart/update/${productId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ quantity: quantity })
+            });
+            const data = await response.json();
+            if (data.success) {
+                loadCart();
             } else {
-                changeDiv.style.display = 'none';
+                showMessage(data.message, 'error');
             }
         }
-
-        function applyDiscount() {
-            const type = document.getElementById('discountType').value;
-            let value = parseFloat(document.getElementById('discountValue').value);
-            if(isNaN(value) || value <= 0) {
-                alert("Please enter a valid discount amount.");
-                return;
+        
+        async function removeFromCart(productId) {
+            const response = await fetch(`/api/cart/remove/${productId}`, {
+                method: 'DELETE'
+            });
+            const data = await response.json();
+            if (data.success) {
+                loadCart();
             }
+        }
+        
+        async function updateTotals() {
+            const response = await fetch('/api/cart');
+            const cart = await response.json();
             const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            if(type === 'fixed' && value > subtotal) {
-                alert("Fixed discount cannot exceed subtotal.");
-                return;
-            }
-            if(type === 'percentage' && value > 100) {
-                alert("Percentage discount cannot exceed 100%.");
-                return;
-            }
-            currentDiscount = { type, value };
-            persistCart();
-            updateTotalsAndChange();
-            showTemporaryMessage(`🎉 Discount applied: ${type === 'percentage' ? value+'%' : '₱'+value}`, "#f59e0b");
+            const discountPercent = parseFloat(document.getElementById('discountPercent').value) || 0;
+            const discount = subtotal * discountPercent / 100;
+            const total = subtotal - discount;
+            
+            document.getElementById('subtotal').innerText = `₱${subtotal.toLocaleString()}`;
+            document.getElementById('total').innerText = `₱${total.toLocaleString()}`;
         }
-
-        function clearDiscount() {
-            currentDiscount = null;
-            document.getElementById('discountValue').value = '';
-            persistCart();
-            updateTotalsAndChange();
-            showTemporaryMessage("Discount removed", "#6c757d");
-        }
-
+        
+        document.getElementById('discountPercent').addEventListener('input', updateTotals);
+        document.getElementById('searchInput').addEventListener('input', renderProducts);
+        
         async function processPayment() {
-            if(cart.length === 0) {
-                alert("Cart is empty! Please add items.");
+            const payment = parseFloat(document.getElementById('paymentAmount').value);
+            if (isNaN(payment)) {
+                showMessage('Please enter payment amount', 'error');
                 return;
             }
-            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-            let total = subtotal;
-            if(currentDiscount) {
-                if(currentDiscount.type === 'percentage') {
-                    total = subtotal - (subtotal * currentDiscount.value / 100);
-                } else {
-                    total = Math.max(0, subtotal - currentDiscount.value);
-                }
+            
+            const discountPercent = parseFloat(document.getElementById('discountPercent').value) || 0;
+            const discountData = discountPercent > 0 ? { type: 'percentage', value: discountPercent } : null;
+            
+            const response = await fetch('/api/process-payment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ payment: payment, discount: discountData })
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                showMessage(data.message, 'success');
+                document.getElementById('receiptContent').innerText = data.receipt;
+                document.getElementById('receiptModal').style.display = 'flex';
+                document.getElementById('paymentAmount').value = '';
+                document.getElementById('discountPercent').value = '0';
+                loadCart();
+                loadProducts();
+                updateTotals();
+            } else {
+                showMessage(data.message, 'error');
             }
-            total = Math.round(total * 100) / 100;
-            const paymentInput = document.getElementById('paymentAmount');
-            const payment = parseFloat(paymentInput.value);
-            if(isNaN(payment) || payment < total) {
-                alert(`❌ Insufficient amount. Total is ₱${total.toLocaleString()}. Please enter exact or higher cash.`);
-                return;
-            }
-            const change = payment - total;
-            
-            // Deduct stock from product catalog (real inventory update)
-            for(let item of cart) {
-                const productRef = productsCatalog.find(p => p.id === item.id);
-                if(productRef) {
-                    if(productRef.stock >= item.quantity) {
-                        productRef.stock -= item.quantity;
-                    } else {
-                        alert(`Stock mismatch for ${productRef.name}. Please refresh cart.`);
-                        return;
-                    }
-                }
-            }
-            
-            // Generate receipt data
-            const receipt = {
-                transactionId: 'TXN' + Date.now(),
-                date: new Date().toLocaleString(),
-                items: [...cart],
-                subtotal: subtotal,
-                discount: currentDiscount,
-                total: total,
-                cash: payment,
-                change: change,
-                cashier: currentUser || "Guest"
-            };
-            
-            // Save receipt for feature 2 (POS history)
-            localStorage.setItem('lastReceipt', JSON.stringify(receipt));
-            // Add to transaction history list for future feature
-            let allTransactions = JSON.parse(localStorage.getItem('transactionHistory') || '[]');
-            allTransactions.unshift(receipt);
-            if(allTransactions.length > 50) allTransactions.pop();
-            localStorage.setItem('transactionHistory', JSON.stringify(allTransactions));
-            
-            // Success message
-            alert(`✅ Payment successful!\nTotal: ₱${total.toLocaleString()}\nCash: ₱${payment.toLocaleString()}\nChange: ₱${change.toLocaleString()}\nReceipt saved.`);
-            
-            // Reset cart & discount
-            cart = [];
-            currentDiscount = null;
-            document.getElementById('discountValue').value = '';
-            document.getElementById('paymentAmount').value = '';
-            persistCart();
-            displayCart();
-            renderProducts();   // refresh product stocks visual
-            updateTotalsAndChange();
-            document.getElementById('changeDisplay').style.display = 'none';
-            
-            // Show floating receipt toast
-            showReceiptNotification(receipt);
         }
         
-        function showReceiptNotification(receipt) {
-            const toast = document.createElement('div');
-            toast.className = 'receipt-toast';
-            toast.innerHTML = `🧾 Receipt #${receipt.transactionId.slice(-8)}<br>₱${receipt.total.toLocaleString()} paid. Change: ₱${receipt.change.toLocaleString()}`;
-            document.body.appendChild(toast);
-            setTimeout(() => { toast.remove(); }, 4000);
+        function showMessage(msg, type) {
+            const msgDiv = document.getElementById('message');
+            msgDiv.innerText = msg;
+            msgDiv.className = `message ${type}`;
+            setTimeout(() => {
+                msgDiv.innerText = '';
+                msgDiv.className = 'message';
+            }, 3000);
         }
         
-        function showTemporaryMessage(msg, bgColor) {
-            const toast = document.createElement('div');
-            toast.style.position = 'fixed';
-            toast.style.bottom = '20px';
-            toast.style.left = '20px';
-            toast.style.backgroundColor = bgColor || '#334155';
-            toast.style.color = 'white';
-            toast.style.padding = '8px 18px';
-            toast.style.borderRadius = '40px';
-            toast.style.fontWeight = 'bold';
-            toast.style.zIndex = '1000';
-            toast.style.fontSize = '0.85rem';
-            toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
-            toast.innerText = msg;
-            document.body.appendChild(toast);
-            setTimeout(() => toast.remove(), 1800);
+        function closeReceipt() {
+            document.getElementById('receiptModal').style.display = 'none';
         }
-
-        // Event listeners
-        document.getElementById('searchInput')?.addEventListener('input', () => {
-            displayProducts(productsCatalog);
-        });
-        document.getElementById('paymentAmount')?.addEventListener('input', () => {
-            updateTotalsAndChange();
-        });
         
-        // Initialize
-        checkAuth();
+        function printReceipt() {
+            const receiptContent = document.getElementById('receiptContent').innerText;
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write('<pre>' + receiptContent + '</pre>');
+            printWindow.document.close();
+            printWindow.print();
+        }
+        
+        loadProducts();
+        loadCart();
+        setInterval(loadCart, 5000);
     </script>
 </body>
 </html>
