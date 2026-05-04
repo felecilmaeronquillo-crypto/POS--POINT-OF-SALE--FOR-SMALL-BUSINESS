@@ -3,206 +3,549 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sales Reports - POS System</title>
+    <title>Sales Reporting - POS System</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+        
+        /* Navbar Styles */
+        .navbar {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 2rem;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .header {
-            background: white;
-            border-radius: 20px;
-            padding: 1rem 2rem;
-            margin-bottom: 2rem;
+            color: white;
+            padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
+        
         .back-btn {
-            background: #667eea;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 10px;
-            text-decoration: none;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
         }
+        
+        .back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        
+        /* Container */
+        .container {
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* Stats Grid */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
+            gap: 20px;
+            margin-bottom: 30px;
         }
+        
         .stat-card {
             background: white;
-            border-radius: 20px;
-            padding: 1.5rem;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
         }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+        }
+        
+        .stat-title {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
         .stat-value {
-            font-size: 2rem;
+            font-size: 32px;
             font-weight: bold;
             color: #667eea;
         }
-        .stat-label {
-            color: #666;
-            margin-top: 0.5rem;
-        }
-        .card {
+        
+        /* Sections */
+        .revenue-section, .transactions-table-section, .low-stock-section {
             background: white;
-            border-radius: 20px;
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-        h3 { margin-bottom: 1rem; color: #333; }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        th, td {
-            padding: 0.75rem;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background: #f5f5f5;
-        }
-        .date-filter {
-            display: flex;
-            gap: 1rem;
-            margin-bottom: 1rem;
-            align-items: center;
-        }
-        .date-filter input {
-            padding: 0.5rem;
-            border: 1px solid #ddd;
             border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .btn {
-            padding: 0.5rem 1rem;
+        
+        .section-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+            border-left: 4px solid #667eea;
+            padding-left: 15px;
+        }
+        
+        /* Date Picker */
+        .date-picker {
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .date-picker label {
+            font-weight: 500;
+            color: #555;
+        }
+        
+        .date-picker input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        
+        .date-picker button {
+            padding: 10px 20px;
             background: #667eea;
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 5px;
             cursor: pointer;
+            transition: background 0.3s;
         }
+        
+        .date-picker button:hover {
+            background: #5a67d8;
+        }
+        
+        /* Revenue Display */
+        .revenue-display {
+            text-align: center;
+            padding: 30px;
+            background: linear-gradient(135deg, #667eea15 0%, #764ba215 100%);
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .revenue-amount {
+            font-size: 48px;
+            font-weight: bold;
+            color: #667eea;
+            margin-top: 10px;
+        }
+        
+        /* Transactions Table */
+        .transactions-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        .transactions-table th {
+            background: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #555;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .transactions-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .transactions-table tr:hover {
+            background: #f9f9f9;
+        }
+        
+        .view-receipt-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .view-receipt-btn:hover {
+            background: #5a67d8;
+        }
+        
+        /* Low Stock */
         .low-stock-item {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
             display: flex;
             justify-content: space-between;
-            padding: 0.5rem 0;
-            border-bottom: 1px solid #eee;
+            align-items: center;
+        }
+        
+        .low-stock-item:last-child {
+            border-bottom: none;
+        }
+        
+        .warning {
+            color: #ff6b6b;
+            font-weight: bold;
+        }
+        
+        .stock-count {
+            font-size: 18px;
+            font-weight: bold;
+            color: #ff6b6b;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 600px;
+            max-height: 80%;
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        
+        .close-modal {
+            cursor: pointer;
+            font-size: 24px;
+            color: #999;
+        }
+        
+        .receipt-text {
+            font-family: monospace;
+            white-space: pre-wrap;
+            font-size: 12px;
+            background: #fafafa;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .print-btn {
+            margin-top: 15px;
+            padding: 10px;
+            width: 100%;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            .stat-value {
+                font-size: 24px;
+            }
+            .revenue-amount {
+                font-size: 32px;
+            }
         }
     </style>
 </head>
 <body>
+    <div class="navbar">
+        <div class="back-btn" onclick="window.location.href='/'">← Back to Dashboard</div>
+        <div>Sales Summary & Reporting</div>
+        <div></div>
+    </div>
+    
     <div class="container">
-        <div class="header">
-            <h2>📊 Sales Reports</h2>
-            <a href="/" class="back-btn">← Back to Dashboard</a>
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-title">Total Revenue</div>
+                <div class="stat-value" id="totalRevenue">₱0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Total Transactions</div>
+                <div class="stat-value" id="totalTransactions">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Total Products</div>
+                <div class="stat-value" id="totalProducts">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Low Stock Items</div>
+                <div class="stat-value warning" id="lowStockCount">0</div>
+            </div>
         </div>
         
-        <div class="stats-grid" id="statsGrid"></div>
-        
-        <div class="card">
-            <h3>Low Stock Alert</h3>
-            <div id="lowStockList"></div>
+        <!-- Daily Revenue Section -->
+        <div class="revenue-section">
+            <div class="section-title">Daily Revenue Report</div>
+            <div class="date-picker">
+                <label>Select Date:</label>
+                <input type="date" id="reportDate">
+                <button onclick="loadDailyRevenue()">View Revenue</button>
+            </div>
+            <div class="revenue-display">
+                <div>Revenue for <strong id="selectedDate">Today</strong></div>
+                <div class="revenue-amount" id="dailyRevenue">₱0</div>
+            </div>
         </div>
         
-        <div class="card">
-            <h3>Recent Transactions</h3>
-            <div class="date-filter">
-                <label for="filterDate">Filter by date:</label>
-                <input type="date" id="filterDate">
-                <button class="btn" onclick="filterTransactions()">Filter</button>
-                <button class="btn" onclick="clearFilter()">Clear</button>
+        <!-- Recent Transactions -->
+        <div class="transactions-table-section">
+            <div class="section-title">Recent Transactions</div>
+            <div id="transactionsList">
+                <div class="empty-state">Loading transactions...</div>
             </div>
-            <div style="overflow-x: auto;">
-                <table id="transactionsTable">
-                    <thead>
-                        <tr><th>ID</th><th>Date</th><th>Items</th><th>Total</th><th>Cashier</th></tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+        </div>
+        
+        <!-- Low Stock Alert -->
+        <div class="low-stock-section">
+            <div class="section-title">⚠️ Low Stock Alert</div>
+            <div id="lowStockList">
+                <div class="empty-state">Loading inventory data...</div>
             </div>
+        </div>
+    </div>
+    
+    <!-- Receipt Modal -->
+    <div class="modal" id="receiptModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Transaction Receipt</h3>
+                <span class="close-modal" onclick="closeReceiptModal()">&times;</span>
+            </div>
+            <pre class="receipt-text" id="receiptContent"></pre>
+            <button class="print-btn" onclick="printReceiptFromModal()">Print Receipt</button>
         </div>
     </div>
 
     <script>
-        let allTransactions = [];
+        let currentReceipt = '';
+        
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/check-auth');
+                const data = await response.json();
+                if (!data.authenticated) {
+                    window.location.href = '/login';
+                    return false;
+                }
+                return true;
+            } catch (error) {
+                console.error('Auth check error:', error);
+                window.location.href = '/login';
+                return false;
+            }
+        }
         
         async function loadAnalytics() {
-            const response = await fetch('/api/analytics');
-            const data = await response.json();
-            
-            document.getElementById('statsGrid').innerHTML = `
-                <div class="stat-card">
-                    <div class="stat-value">₱${data.total_revenue.toLocaleString()}</div>
-                    <div class="stat-label">Total Revenue</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">${data.total_transactions}</div>
-                    <div class="stat-label">Total Transactions</div>
-                </div>
-                <div class="stat-card">
-                    <div class="stat-value">${data.total_products}</div>
-                    <div class="stat-label">Total Products</div>
-                </div>
-            `;
-            
-            const lowStockHtml = data.low_stock_products.length > 0 
-                ? data.low_stock_products.map(p => `<div class="low-stock-item"><span>${p.name}</span><span>Stock: ${p.stock}</span></div>`).join('')
-                : '<p>No low stock products</p>';
-            document.getElementById('lowStockList').innerHTML = lowStockHtml;
+            try {
+                const response = await fetch('/api/analytics');
+                const data = await response.json();
+                
+                document.getElementById('totalRevenue').textContent = `₱${data.total_revenue.toLocaleString()}`;
+                document.getElementById('totalTransactions').textContent = data.total_transactions;
+                document.getElementById('totalProducts').textContent = data.total_products;
+                document.getElementById('lowStockCount').textContent = data.low_stock_products.length;
+                
+                const lowStockContainer = document.getElementById('lowStockList');
+                if (data.low_stock_products.length === 0) {
+                    lowStockContainer.innerHTML = '<div class="empty-state">✓ No low stock items. All products have sufficient stock!</div>';
+                } else {
+                    lowStockContainer.innerHTML = data.low_stock_products.map(product => `
+                        <div class="low-stock-item">
+                            <span><strong>${product.name}</strong></span>
+                            <span class="stock-count">Stock: ${product.stock} units left</span>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+            }
         }
         
         async function loadTransactions() {
-            const response = await fetch('/api/transactions');
-            allTransactions = await response.json();
-            renderTransactions(allTransactions);
+            try {
+                const response = await fetch('/api/transactions');
+                const transactions = await response.json();
+                const container = document.getElementById('transactionsList');
+                
+                if (transactions.length === 0) {
+                    container.innerHTML = '<div class="empty-state">No transactions found. Start selling to see data!</div>';
+                    return;
+                }
+                
+                const table = document.createElement('table');
+                table.className = 'transactions-table';
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th>Transaction ID</th>
+                            <th>Date & Time</th>
+                            <th>Items</th>
+                            <th>Subtotal</th>
+                            <th>Discount</th>
+                            <th>Total</th>
+                            <th>Cashier</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                `;
+                
+                const tbody = table.querySelector('tbody');
+                transactions.forEach(transaction => {
+                    const date = new Date(transaction.date);
+                    const row = tbody.insertRow();
+                    row.innerHTML = `
+                        <td>#${transaction.id}</td>
+                        <td>${date.toLocaleString()}</td>
+                        <td>${transaction.items.length} item(s)</td>
+                        <td>₱${transaction.subtotal.toLocaleString()}</td>
+                        <td>₱${transaction.discount_amount.toLocaleString()}</td>
+                        <td><strong>₱${transaction.total.toLocaleString()}</strong></td>
+                        <td>${transaction.cashier || 'POS User'}</td>
+                        <td><button class="view-receipt-btn" onclick="viewReceipt(${transaction.id})">View Receipt</button></td>
+                    `;
+                });
+                
+                container.innerHTML = '';
+                container.appendChild(table);
+            } catch (error) {
+                console.error('Error loading transactions:', error);
+                document.getElementById('transactionsList').innerHTML = '<div class="empty-state">Error loading transactions. Please try again.</div>';
+            }
         }
         
-        function renderTransactions(transactions) {
-            const tbody = document.querySelector('#transactionsTable tbody');
-            tbody.innerHTML = transactions.map(t => `
-                <tr>
-                    <td>${t.id}</td>
-                    <td>${new Date(t.date).toLocaleString()}</td>
-                    <td>${t.items.length} items</td>
-                    <td>₱${t.total.toLocaleString()}</td>
-                    <td>${t.cashier || 'POS User'}</td>
-                </tr>
-            `).join('');
-        }
-        
-        function filterTransactions() {
-            const filterDate = document.getElementById('filterDate').value;
-            if (!filterDate) {
-                renderTransactions(allTransactions);
-                return;
+        async function loadDailyRevenue() {
+            const dateInput = document.getElementById('reportDate');
+            let date = dateInput.value;
+            
+            if (!date) {
+                date = new Date().toISOString().split('T')[0];
+                dateInput.value = date;
             }
             
-            const filtered = allTransactions.filter(t => {
-                const transDate = new Date(t.date).toISOString().split('T')[0];
-                return transDate === filterDate;
-            });
-            renderTransactions(filtered);
+            const formattedDate = new Date(date).toLocaleDateString();
+            document.getElementById('selectedDate').textContent = formattedDate;
+            
+            try {
+                const response = await fetch(`/api/reports/daily?date=${date}`);
+                const data = await response.json();
+                document.getElementById('dailyRevenue').textContent = `₱${data.total_revenue.toLocaleString()}`;
+            } catch (error) {
+                console.error('Error loading daily revenue:', error);
+                document.getElementById('dailyRevenue').textContent = '₱0';
+            }
         }
         
-        function clearFilter() {
-            document.getElementById('filterDate').value = '';
-            renderTransactions(allTransactions);
+        async function viewReceipt(transactionId) {
+            try {
+                const response = await fetch('/api/receipt/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ transaction_id: transactionId })
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    currentReceipt = data.receipt;
+                    document.getElementById('receiptContent').textContent = currentReceipt;
+                    document.getElementById('receiptModal').style.display = 'flex';
+                } else {
+                    alert('Failed to load receipt');
+                }
+            } catch (error) {
+                console.error('Error loading receipt:', error);
+                alert('Error loading receipt');
+            }
         }
         
-        loadAnalytics();
-        loadTransactions();
+        function closeReceiptModal() {
+            document.getElementById('receiptModal').style.display = 'none';
+        }
+        
+        function printReceiptFromModal() {
+            if (currentReceipt) {
+                const printWindow = window.open('', '_blank');
+                printWindow.document.write('<html><head><title>Receipt</title></head><body><pre>' + currentReceipt + '</pre></body></html>');
+                printWindow.document.close();
+                printWindow.print();
+            }
+        }
+        
+        async function refreshAllData() {
+            await loadAnalytics();
+            await loadTransactions();
+            await loadDailyRevenue();
+        }
+        
+        function setDefaultDate() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('reportDate').value = today;
+        }
+        
+        async function init() {
+            const isAuthenticated = await checkAuth();
+            if (isAuthenticated) {
+                setDefaultDate();
+                await refreshAllData();
+                setInterval(refreshAllData, 30000);
+            }
+        }
+        
+        window.onclick = function(event) {
+            const modal = document.getElementById('receiptModal');
+            if (event.target === modal) {
+                closeReceiptModal();
+            }
+        }
+        
+        init();
     </script>
 </body>
 </html>
