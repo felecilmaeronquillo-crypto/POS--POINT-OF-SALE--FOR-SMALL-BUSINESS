@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Reports - POS System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 1rem 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .back-btn {
+            background: #667eea;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            text-decoration: none;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        h3 { margin-bottom: 1rem; color: #333; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background: #f5f5f5;
+        }
+        .date-filter {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            align-items: center;
+        }
+        .date-filter input {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+        }
+        .btn {
+            padding: 0.5rem 1rem;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .low-stock-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h2>📊 Sales Reports</h2>
+            <a href="/" class="back-btn">← Back to Dashboard</a>
+        </div>
+        
+        <div class="stats-grid" id="statsGrid"></div>
+        
+        <div class="card">
+            <h3>Low Stock Alert</h3>
+            <div id="lowStockList"></div>
+        </div>
+        
+        <div class="card">
+            <h3>Recent Transactions</h3>
+            <div class="date-filter">
+                <label for="filterDate">Filter by date:</label>
+                <input type="date" id="filterDate">
+                <button class="btn" onclick="filterTransactions()">Filter</button>
+                <button class="btn" onclick="clearFilter()">Clear</button>
+            </div>
+            <div style="overflow-x: auto;">
+                <table id="transactionsTable">
+                    <thead>
+                        <tr><th>ID</th><th>Date</th><th>Items</th><th>Total</th><th>Cashier</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allTransactions = [];
+        
+        async function loadAnalytics() {
+            const response = await fetch('/api/analytics');
+            const data = await response.json();
+            
+            document.getElementById('statsGrid').innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">₱${data.total_revenue.toLocaleString()}</div>
+                    <div class="stat-label">Total Revenue</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${data.total_transactions}</div>
+                    <div class="stat-label">Total Transactions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${data.total_products}</div>
+                    <div class="stat-label">Total Products</div>
+                </div>
+            `;
+            
+            const lowStockHtml = data.low_stock_products.length > 0 
+                ? data.low_stock_products.map(p => `<div class="low-stock-item"><span>${p.name}</span><span>Stock: ${p.stock}</span></div>`).join('')
+                : '<p>No low stock products</p>';
+            document.getElementById('lowStockList').innerHTML = lowStockHtml;
+        }
+        
+        async function loadTransactions() {
+            const response = await fetch('/api/transactions');
+            allTransactions = await response.json();
+            renderTransactions(allTransactions);
+        }
+        
+        function renderTransactions(transactions) {
+            const tbody = document.querySelector('#transactionsTable tbody');
+            tbody.innerHTML = transactions.map(t => `
+                <tr>
+                    <td>${t.id}</td>
+                    <td>${new Date(t.date).toLocaleString()}</td>
+                    <td>${t.items.length} items</td>
+                    <td>₱${t.total.toLocaleString()}</td>
+                    <td>${t.cashier || 'POS User'}</td>
+                </tr>
+            `).join('');
+        }
+        
+        function filterTransactions() {
+            const filterDate = document.getElementById('filterDate').value;
+            if (!filterDate) {
+                renderTransactions(allTransactions);
+                return;
+            }
+            
+            const filtered = allTransactions.filter(t => {
+                const transDate = new Date(t.date).toISOString().split('T')[0];
+                return transDate === filterDate;
+            });
+            renderTransactions(filtered);
+        }
+        
+        function clearFilter() {
+            document.getElementById('filterDate').value = '';
+            renderTransactions(allTransactions);
+        }
+        
+        loadAnalytics();
+        loadTransactions();
+    </script>
+</body>
+</html>
