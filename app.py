@@ -1,6 +1,5 @@
 # app.py - Vercel-compatible POS System Backend
-from logging import Manager
-from flask import Flask, redirect, request, jsonify, session, render_template, url_for
+from flask import Flask, redirect, request, jsonify, session, render_template
 from datetime import datetime, timedelta
 import json
 import os
@@ -103,14 +102,17 @@ class CartManager:
             else:
                 return False, f'Only {available_stock - existing["quantity"]} more available!'
         else:
-            cart.append({
-                'id': product_id,
-                'name': name,
-                'price': price,
-                'quantity': quantity
-            })
-            self.set_cart(cart)
-            return True, f'Added {name} to cart'
+            if quantity <= available_stock:
+                cart.append({
+                    'id': product_id,
+                    'name': name,
+                    'price': price,
+                    'quantity': quantity
+                })
+                self.set_cart(cart)
+                return True, f'Added {name} to cart'
+            else:
+                return False, f'Only {available_stock} units available!'
     
     def remove_item(self, product_id):
         cart = self.get_cart()
@@ -252,6 +254,13 @@ class POSController:
     def get_all_transactions(self):
         return self.storage.get_transactions()
     
+    def get_transaction_by_id(self, transaction_id):
+        transactions = self.storage.get_transactions()
+        for transaction in transactions:
+            if transaction['id'] == transaction_id:
+                return transaction
+        return None
+    
     def get_analytics(self):
         transactions = self.storage.get_transactions()
         products = self.storage.get_products()
@@ -295,188 +304,23 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# API Routes
-@app.route('/api/login', methods=['POST'])
-def login():
-    data = request.json
-    username = data.get('username')
-    password = data.get('password')
-    
-    success, role = pos_controller.auth_manager.authenticate(username, password)
-    
-    if success:
-        session['username'] = username
-        session['role'] = role
-        return jsonify({'success': True, 'username': username, 'role': role})
-    
-    return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
-
-@app.route('/api/logout', methods=['POST'])
-def logout():
-    session.clear()
-    return jsonify({'success': True})
-
-@app.route('/api/check-auth', methods=['GET'])
-def check_auth():
-    if 'username' in session:
-        return jsonify({
-            'authenticated': True,
-            'username': session['username'],
-            'role': session['role']
-        })
-    return jsonify({'authenticated': False})
-
-@app.route('/api/products', methods=['GET'])
-@login_required
-def get_products():
-    return jsonify(pos_controller.get_products())
-
-@app.route('/api/products', methods=['POST'])
-@admin_required
-def add_product():
-    data = request.json
-    product = pos_controller.add_product(
-        data.get('name'),
-        data.get('price'),
-        data.get('stock')
-    )
-    return jsonify({'success': True, 'product': product})
-
-@app.route('/api/products/<int:product_id>', methods=['PUT'])
-@admin_required
-def update_product(product_id):
-    data = request.json
-    pos_controller.update_product(
-        product_id,
-        data.get('name'),
-        data.get('price'),
-        data.get('stock')
-    )
-    return jsonify({'success': True})
-
-@app.route('/api/products/<int:product_id>', methods=['DELETE'])
-@admin_required
-def delete_product(product_id):
-    pos_controller.delete_product(product_id)
-    return jsonify({'success': True})
-
-@app.route('/api/cart', methods=['GET'])
-@login_required
-def get_cart():
-    cart_manager = CartManager(session)
-    return jsonify(cart_manager.get_cart())
-
-@app.route('/api/cart/add', methods=['POST'])
-@login_required
-def add_to_cart():
-    data = request.json
-    product_id = data.get('product_id')
-    quantity = data.get('quantity', 1)
-    
-    products = pos_controller.get_products()
-    product = next((p for p in products if p['id'] == product_id), None)
-    
-    if not product:
-        return jsonify({'success': False, 'message': 'Product not found'}), 404
-    
-    if product['stock'] < quantity:
-        return jsonify({'success': False, 'message': f'Only {product["stock"]} units available!'})
-    
-    cart_manager = CartManager(session)
-    success, message = cart_manager.add_item(
-        product_id, product['name'], product['price'], 
-        quantity, product['stock']
-    )
-    
-    return jsonify({'success': success, 'message': message, 'cart': cart_manager.get_cart()})
-
-@app.route('/api/cart/remove/<int:product_id>', methods=['DELETE'])
-@login_required
-def remove_from_cart(product_id):
-    cart_manager = CartManager(session)
-    cart_manager.remove_item(product_id)
-    return jsonify({'success': True, 'cart': cart_manager.get_cart()})
-
-@app.route('/api/cart/update/<int:product_id>', methods=['PUT'])
-@login_required
-def update_cart_quantity(product_id):
-    data = request.json
-    quantity = data.get('quantity', 1)
-    
-    products = pos_controller.get_products()
-    product = next((p for p in products if p['id'] == product_id), None)
-    
-    if not product:
-        return jsonify({'success': False, 'message': 'Product not found'}), 404
-    
-    cart_manager = CartManager(session)
-    success, message = cart_manager.update_quantity(product_id, quantity, product['stock'])
-    
-    return jsonify({'success': success, 'message': message, 'cart': cart_manager.get_cart()})
-
-@app.route('/api/process-payment', methods=['POST'])
-@login_required
-def process_payment():
-    data = request.json
-    payment = data.get('payment', 0)
-    discount = data.get('discount')
-    
-    cart_manager = CartManager(session)
-    username = session.get('username', 'POS User')
-    
-    success, message, receipt = pos_controller.process_payment(
-        cart_manager, discount, payment, username
-    )
-    
-    return jsonify({'success': success, 'message': message, 'receipt': receipt})
-
-@app.route('/api/transactions', methods=['GET'])
-@admin_required
-def get_transactions():
-    return jsonify(pos_controller.get_all_transactions())
-
-@app.route('/api/analytics', methods=['GET'])
-@admin_required
-def get_analytics():
-    return jsonify(pos_controller.get_analytics())
-
-@app.route('/api/reports/daily', methods=['GET'])
-@login_required
-def get_daily_revenue():
-    date_str = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))
-    total = pos_controller.get_daily_revenue(date_str)
-    return jsonify({'date': date_str, 'total_revenue': total})
-
 # ========== PAGE ROUTES ==========
 @app.route('/')
 def index():
     if 'username' in session:
-        if session.get('role') == 'admin':
-         return redirect(url_for('login'))
-        
+        return render_template('dashboard.html')
+    return render_template('login.html')
 
-    
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    message = ""
-    if request.method == 'POST':
-        username = request.form.get('username').strip()
-        password = request.form.get('password')
-        
-        if not username or not password:
-            message = "Please enter both username and password."
-        else:
-            user = Manager.auth_manager.authenticate(username, password)
-            if user:
-                session['username'] = username
-                session['role'] = user['role']
+@app.route('/login')
+def login_page():
+    if 'username' in session:
+        return redirect('/')
+    return render_template('login.html')
 
-                if user['role'] == 'admin':
-                    return redirect(url_for('dashboard'))
-            else:
-                message = "Invalid credentials. Please try again."
-
-        return render_template('login.html', message=message)
+@app.route('/dashboard')
+@login_required
+def dashboard():
+    return render_template('dashboard.html')
 
 @app.route('/feature1')
 @login_required
@@ -502,6 +346,197 @@ def products_page():
 @admin_required
 def history_page():
     return render_template('history.html')
+
+# ========== API ROUTES ==========
+@app.route('/api/login', methods=['POST'])
+def api_login():
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+    
+    success, role = pos_controller.auth_manager.authenticate(username, password)
+    
+    if success:
+        session['username'] = username
+        session['role'] = role
+        return jsonify({'success': True, 'username': username, 'role': role})
+    
+    return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
+
+@app.route('/api/logout', methods=['POST'])
+def api_logout():
+    session.clear()
+    return jsonify({'success': True})
+
+@app.route('/api/check-auth', methods=['GET'])
+def api_check_auth():
+    if 'username' in session:
+        return jsonify({
+            'authenticated': True,
+            'username': session['username'],
+            'role': session['role']
+        })
+    return jsonify({'authenticated': False})
+
+@app.route('/api/products', methods=['GET'])
+@login_required
+def api_get_products():
+    return jsonify(pos_controller.get_products())
+
+@app.route('/api/products', methods=['POST'])
+@admin_required
+def api_add_product():
+    data = request.json
+    product = pos_controller.add_product(
+        data.get('name'),
+        data.get('price'),
+        data.get('stock')
+    )
+    return jsonify({'success': True, 'product': product})
+
+@app.route('/api/products/<int:product_id>', methods=['PUT'])
+@admin_required
+def api_update_product(product_id):
+    data = request.json
+    pos_controller.update_product(
+        product_id,
+        data.get('name'),
+        data.get('price'),
+        data.get('stock')
+    )
+    return jsonify({'success': True})
+
+@app.route('/api/products/<int:product_id>', methods=['DELETE'])
+@admin_required
+def api_delete_product(product_id):
+    pos_controller.delete_product(product_id)
+    return jsonify({'success': True})
+
+@app.route('/api/cart', methods=['GET'])
+@login_required
+def api_get_cart():
+    cart_manager = CartManager(session)
+    return jsonify(cart_manager.get_cart())
+
+@app.route('/api/cart/add', methods=['POST'])
+@login_required
+def api_add_to_cart():
+    data = request.json
+    product_id = data.get('product_id')
+    quantity = data.get('quantity', 1)
+    
+    products = pos_controller.get_products()
+    product = next((p for p in products if p['id'] == product_id), None)
+    
+    if not product:
+        return jsonify({'success': False, 'message': 'Product not found'}), 404
+    
+    if product['stock'] < quantity:
+        return jsonify({'success': False, 'message': f'Only {product["stock"]} units available!'})
+    
+    cart_manager = CartManager(session)
+    success, message = cart_manager.add_item(
+        product_id, product['name'], product['price'], 
+        quantity, product['stock']
+    )
+    
+    return jsonify({'success': success, 'message': message, 'cart': cart_manager.get_cart()})
+
+@app.route('/api/cart/remove/<int:product_id>', methods=['DELETE'])
+@login_required
+def api_remove_from_cart(product_id):
+    cart_manager = CartManager(session)
+    cart_manager.remove_item(product_id)
+    return jsonify({'success': True, 'cart': cart_manager.get_cart()})
+
+@app.route('/api/cart/update/<int:product_id>', methods=['PUT'])
+@login_required
+def api_update_cart_quantity(product_id):
+    data = request.json
+    quantity = data.get('quantity', 1)
+    
+    products = pos_controller.get_products()
+    product = next((p for p in products if p['id'] == product_id), None)
+    
+    if not product:
+        return jsonify({'success': False, 'message': 'Product not found'}), 404
+    
+    cart_manager = CartManager(session)
+    success, message = cart_manager.update_quantity(product_id, quantity, product['stock'])
+    
+    return jsonify({'success': success, 'message': message, 'cart': cart_manager.get_cart()})
+
+@app.route('/api/process-payment', methods=['POST'])
+@login_required
+def api_process_payment():
+    data = request.json
+    payment = data.get('payment', 0)
+    discount = data.get('discount')
+    
+    cart_manager = CartManager(session)
+    username = session.get('username', 'POS User')
+    
+    success, message, receipt = pos_controller.process_payment(
+        cart_manager, discount, payment, username
+    )
+    
+    return jsonify({'success': success, 'message': message, 'receipt': receipt})
+
+@app.route('/api/transactions', methods=['GET'])
+@admin_required
+def api_get_transactions():
+    return jsonify(pos_controller.get_all_transactions())
+
+@app.route('/api/transactions/<int:transaction_id>', methods=['GET'])
+@login_required
+def api_get_transaction(transaction_id):
+    transaction = pos_controller.get_transaction_by_id(transaction_id)
+    if transaction:
+        return jsonify(transaction)
+    return jsonify({'error': 'Transaction not found'}), 404
+
+@app.route('/api/receipt/generate', methods=['POST'])
+@login_required
+def api_generate_receipt():
+    data = request.json
+    transaction_id = data.get('transaction_id')
+    
+    if not transaction_id:
+        # Get latest transaction
+        transactions = pos_controller.get_all_transactions()
+        if transactions:
+            transaction = transactions[0]
+        else:
+            return jsonify({'error': 'No transactions found'}), 404
+    else:
+        transaction = pos_controller.get_transaction_by_id(transaction_id)
+    
+    if transaction:
+        receipt = pos_controller.receipt_generator.generate_receipt_text(transaction)
+        return jsonify({'receipt': receipt})
+    
+    return jsonify({'error': 'Transaction not found'}), 404
+
+@app.route('/api/analytics', methods=['GET'])
+@admin_required
+def api_get_analytics():
+    return jsonify(pos_controller.get_analytics())
+
+@app.route('/api/reports/daily', methods=['GET'])
+@login_required
+def api_get_daily_revenue():
+    date_str = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))
+    total = pos_controller.get_daily_revenue(date_str)
+    return jsonify({'date': date_str, 'total_revenue': total})
+
+# Error handlers
+@app.errorhandler(404)
+def not_found(error):
+    return jsonify({'error': 'Resource not found'}), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    return jsonify({'error': 'Internal server error'}), 500
 
 # For Vercel
 application = app
