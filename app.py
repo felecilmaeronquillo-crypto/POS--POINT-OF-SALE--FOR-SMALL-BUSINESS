@@ -453,7 +453,7 @@ def get_daily_revenue():
 def home():
     if 'username' in session:
         if session.get('role') == 'admin':
-            return redirect(url_for('admin_dashboard'))
+            return redirect(url_for('dashboard.html'))
         return redirect(url_for('login'))
         
     
@@ -461,8 +461,8 @@ def home():
 def login():
     if session.get('username'):
         if session.get('role') == 'admin':
-            return redirect(url_for('admin_dashboard'))
-        return redirect(url_for('user_dashboard'))
+            return redirect(url_for('dashboard.html'))
+
     
     message = ""
     if request.method == 'POST':
@@ -480,7 +480,7 @@ def login():
                 if user['role'] == 'admin':
                     return redirect(url_for('admin_dashboard'))
                 else:
-                    return redirect(url_for('user_dashboard'))
+                    return redirect(url_for('dashboard.html'))
             else:
                 message = "Invalid credentials. Please try again."
 
