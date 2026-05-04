@@ -5,175 +5,162 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Receipt Generation - POS System</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+        .navbar {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 2rem;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-        .header {
-            background: white;
-            border-radius: 20px;
-            padding: 1rem 2rem;
-            margin-bottom: 2rem;
+            color: white;
+            padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
         .back-btn {
-            background: #667eea;
-            color: white;
-            padding: 0.5rem 1rem;
-            border-radius: 10px;
-            text-decoration: none;
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
         }
-        .card {
-            background: white;
-            border-radius: 20px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
         }
         .receipt-preview {
-            background: #f9f9f9;
-            padding: 1.5rem;
+            background: white;
             border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 2px dashed #e0e0e0;
+        }
+        .receipt-content {
             font-family: monospace;
             white-space: pre-wrap;
-            margin-top: 1rem;
-            max-height: 500px;
-            overflow-y: auto;
+            background: #fafafa;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
         }
-        .btn {
-            padding: 0.5rem 1rem;
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        button {
+            flex: 1;
+            padding: 12px;
             border: none;
-            border-radius: 10px;
+            border-radius: 5px;
             cursor: pointer;
-            margin-top: 1rem;
-            margin-right: 0.5rem;
+            font-size: 14px;
         }
-        .btn-primary {
-            background: #667eea;
+        .print-btn {
+            background: #28a745;
             color: white;
         }
-        .btn-success {
-            background: #10b981;
+        .download-btn {
+            background: #17a2b8;
             color: white;
         }
-        select, input {
-            width: 100%;
-            padding: 0.8rem;
-            margin: 0.5rem 0;
-            border: 1px solid #ddd;
-            border-radius: 10px;
+        .info-message {
+            text-align: center;
+            color: #999;
+            padding: 40px;
         }
-        h3 { margin-bottom: 1rem; color: #333; }
     </style>
 </head>
 <body>
+    <div class="navbar">
+        <div class="back-btn" onclick="window.location.href='/'">← Back to Dashboard</div>
+        <div>Receipt Generation</div>
+        <div></div>
+    </div>
+    
     <div class="container">
-        <div class="header">
-            <h2>🧾 Receipt Generation</h2>
-            <a href="/" class="back-btn">← Back to Dashboard</a>
-        </div>
-        
-        <div class="card">
-            <h3>Select Transaction</h3>
-            <select id="transactionSelect" title="Select Transaction" aria-label="Select Transaction" onchange="loadReceipt()">
-                <option value="">-- Select a transaction --</option>
-            </select>
-            
-            <div id="receiptPreview" class="receipt-preview">
-                Select a transaction to view receipt
+        <div class="receipt-preview">
+            <div class="receipt-header">
+                <h2>Receipt Preview</h2>
+                <p>Latest transaction receipt</p>
             </div>
-            
-            <button class="btn btn-primary" onclick="printReceipt()">🖨️ Print Receipt</button>
+            <div id="receiptContent" class="receipt-content"></div>
+            <div class="btn-group">
+                <button class="print-btn" onclick="printReceipt()">🖨️ Print Receipt</button>
+                <button class="download-btn" onclick="downloadReceipt()">💾 Download Receipt</button>
+            </div>
         </div>
     </div>
 
     <script>
-        let currentReceipt = '';
+        let currentReceipt = null;
         
-        async function loadTransactions() {
+        async function loadLatestReceipt() {
+            // Get the latest transaction
             const response = await fetch('/api/transactions');
             const transactions = await response.json();
             
-            const select = document.getElementById('transactionSelect');
-            select.innerHTML = '<option value="">-- Select a transaction --</option>' + 
-                transactions.map(t => `<option value="${t.id}">#${t.id} - ${new Date(t.date).toLocaleString()} - ₱${t.total.toLocaleString()}</option>`).join('');
-        }
-        
-        async function loadReceipt() {
-            const transactionId = document.getElementById('transactionSelect').value;
-            if (!transactionId) {
-                document.getElementById('receiptPreview').innerHTML = 'Select a transaction to view receipt';
-                return;
-            }
-            
-            const response = await fetch('/api/transactions');
-            const transactions = await response.json();
-            const transaction = transactions.find(t => t.id == transactionId);
-            
-            if (transaction) {
-                // Generate receipt format
-                const date = new Date(transaction.date);
-                const receipt = [];
-                receipt.push("╔════════════════════════════════════════╗");
-                receipt.push("║           MODERN POS SYSTEM            ║");
-                receipt.push("║        123 Business Street, City       ║");
-                receipt.push("╚════════════════════════════════════════╝");
-                receipt.push("");
-                receipt.push(`Transaction #: ${transaction.id}`);
-                receipt.push(`Date: ${date.toLocaleDateString()}`);
-                receipt.push(`Time: ${date.toLocaleTimeString()}`);
-                receipt.push(`Cashier: ${transaction.cashier || 'POS User'}`);
-                receipt.push("─────────────────────────────────────────");
-                receipt.push("");
-                receipt.push("ITEMS:");
+            if (transactions && transactions.length > 0) {
+                const latestTransaction = transactions[0];
+                const receiptResponse = await fetch('/api/receipt/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ transaction_id: latestTransaction.id })
+                });
                 
-                for (const item of transaction.items) {
-                    receipt.push(`${item.name}`);
-                    receipt.push(`  ${item.quantity} x ₱${item.price.toLocaleString()} = ₱${(item.price * item.quantity).toLocaleString()}`);
+                if (receiptResponse.ok) {
+                    const data = await receiptResponse.json();
+                    currentReceipt = data.receipt;
+                    document.getElementById('receiptContent').textContent = currentReceipt;
+                } else {
+                    document.getElementById('receiptContent').innerHTML = '<div class="info-message">No receipts available yet. Complete a transaction first.</div>';
                 }
-                
-                receipt.push("");
-                receipt.push("─────────────────────────────────────────");
-                receipt.push(`Subtotal:                    ₱${transaction.subtotal.toLocaleString()}`);
-                
-                if (transaction.discount_amount > 0) {
-                    receipt.push(`Discount:                     -₱${transaction.discount_amount.toLocaleString()}`);
-                }
-                
-                receipt.push(`TOTAL:                       ₱${transaction.total.toLocaleString()}`);
-                receipt.push(`Cash Payment:                ₱${transaction.payment.toLocaleString()}`);
-                receipt.push(`Change:                      ₱${transaction.change.toLocaleString()}`);
-                receipt.push("═════════════════════════════════════════");
-                receipt.push("          THANK YOU FOR SHOPPING!");
-                receipt.push("            Please come again!");
-                receipt.push("═════════════════════════════════════════");
-                
-                currentReceipt = receipt.join("\n");
-                document.getElementById('receiptPreview').innerText = currentReceipt;
+            } else {
+                document.getElementById('receiptContent').innerHTML = '<div class="info-message">No receipts available yet. Complete a transaction first.</div>';
             }
         }
         
         function printReceipt() {
             if (currentReceipt) {
                 const printWindow = window.open('', '_blank');
-                printWindow.document.write('<pre>' + currentReceipt + '</pre>');
+                printWindow.document.write('<html><head><title>Receipt</title></head><body><pre>' + currentReceipt + '</pre></body></html>');
                 printWindow.document.close();
                 printWindow.print();
             } else {
-                alert('Please select a transaction first');
+                alert('No receipt to print');
             }
         }
         
-        loadTransactions();
+        function downloadReceipt() {
+            if (currentReceipt) {
+                const blob = new Blob([currentReceipt], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `receipt_${new Date().getTime()}.txt`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            } else {
+                alert('No receipt to download');
+            }
+        }
+        
+        loadLatestReceipt();
+        
+        // Refresh receipt every 30 seconds
+        setInterval(loadLatestReceipt, 30000);
     </script>
 </body>
 </html>
