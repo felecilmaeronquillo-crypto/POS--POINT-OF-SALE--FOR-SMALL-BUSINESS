@@ -449,7 +449,7 @@ def get_daily_revenue():
 
 # ========== PAGE ROUTES ==========
 @app.route('/')
-def home():
+def index():
     if 'username' in session:
         if session.get('role') == 'admin':
          return redirect(url_for('login'))
