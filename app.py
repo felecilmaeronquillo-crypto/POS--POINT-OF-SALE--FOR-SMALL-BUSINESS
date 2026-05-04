@@ -1,6 +1,5 @@
 # app.py - Vercel-compatible POS System Backend
 from logging import Manager
-
 from flask import Flask, redirect, request, jsonify, session, render_template, url_for
 from datetime import datetime, timedelta
 import json
@@ -453,17 +452,12 @@ def get_daily_revenue():
 def home():
     if 'username' in session:
         if session.get('role') == 'admin':
-            return redirect(url_for('dashboard.html'))
-        return redirect(url_for('login'))
+         return redirect(url_for('login'))
         
+
     
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if session.get('username'):
-        if session.get('role') == 'admin':
-            return redirect(url_for('dashboard.html'))
-
-    
     message = ""
     if request.method == 'POST':
         username = request.form.get('username').strip()
@@ -478,9 +472,7 @@ def login():
                 session['role'] = user['role']
 
                 if user['role'] == 'admin':
-                    return redirect(url_for('admin_dashboard'))
-                else:
-                    return redirect(url_for('dashboard.html'))
+                    return redirect(url_for('dashboard'))
             else:
                 message = "Invalid credentials. Please try again."
 
