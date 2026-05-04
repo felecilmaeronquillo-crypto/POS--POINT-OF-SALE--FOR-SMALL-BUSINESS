@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>POS Dashboard - Main</title>
+    <title>Dashboard - POS System</title>
     <style>
         * {
             margin: 0;
@@ -12,312 +12,197 @@
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+        }
+        .navbar {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .nav-brand {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .nav-user {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .logout-btn {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .logout-btn:hover {
+            background: rgba(255,255,255,0.3);
         }
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 2rem;
+            padding: 30px;
         }
-        .header {
-            text-align: center;
-            color: white;
-            margin-bottom: 2rem;
+        .welcome-card {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
-        .header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-        }
-        .feature-grid {
+        .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
+            gap: 20px;
+            margin-top: 20px;
         }
         .feature-card {
             background: white;
-            border-radius: 20px;
-            padding: 2rem;
-            text-align: center;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             cursor: pointer;
             transition: transform 0.3s, box-shadow 0.3s;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
         .feature-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15);
         }
         .feature-icon {
-            font-size: 4rem;
-            margin-bottom: 1rem;
+            font-size: 48px;
+            margin-bottom: 15px;
         }
         .feature-title {
-            font-size: 1.5rem;
+            font-size: 20px;
             font-weight: bold;
-            margin-bottom: 0.5rem;
+            margin-bottom: 10px;
             color: #333;
         }
         .feature-desc {
             color: #666;
-            margin-bottom: 1rem;
+            line-height: 1.5;
         }
-        .feature-badge {
-            display: inline-block;
-            padding: 0.3rem 1rem;
-            border-radius: 20px;
-            font-size: 0.8rem;
+        .admin-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 2px solid #e0e0e0;
+        }
+        .admin-title {
+            font-size: 20px;
             font-weight: bold;
-        }
-        .badge-core {
-            background: #667eea;
-            color: white;
-        }
-        .badge-admin {
-            background: #e74c3c;
-            color: white;
-        }
-        .user-info {
-            position: fixed;
-            top: 1rem;
-            right: 1rem;
-            background: white;
-            padding: 0.5rem 1rem;
-            border-radius: 30px;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
-        .logout-btn {
-            background: #dc2626;
-            color: white;
-            border: none;
-            padding: 0.3rem 0.8rem;
-            border-radius: 20px;
-            cursor: pointer;
-        }
-        .stats-bar {
-            background: white;
-            border-radius: 20px;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-        .stat {
-            text-align: center;
-        }
-        .stat-value {
-            font-size: 1.8rem;
-            font-weight: bold;
+            margin-bottom: 20px;
             color: #667eea;
         }
-        .stat-label {
-            color: #666;
-            font-size: 0.8rem;
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
         }
-        .login-container {
-            max-width: 400px;
-            margin: 100px auto;
+        .admin-card {
             background: white;
-            padding: 2rem;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-        .login-container input {
-            width: 100%;
-            padding: 0.8rem;
-            margin: 0.5rem 0;
-            border: 1px solid #ddd;
             border-radius: 10px;
-        }
-        .login-container button {
-            width: 100%;
-            padding: 0.8rem;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             cursor: pointer;
-            margin-top: 1rem;
+            transition: all 0.3s;
         }
-        .error {
-            color: #dc2626;
-            text-align: center;
-            margin-top: 0.5rem;
+        .admin-card:hover {
+            background: #f9f9f9;
+            transform: translateX(5px);
+        }
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <div id="app">
-        <!-- Dashboard -->
-        <div id="dashboard" style="display: none;">
-            <div class="user-info">
-                <span id="userName">User</span>
-                <span id="userRole"></span>
-                <button class="logout-btn" onclick="logout()">Logout</button>
+    <div class="navbar">
+        <div class="nav-brand">Modern POS System</div>
+        <div class="nav-user">
+            <span>Welcome, <span id="username"></span> (<span id="role"></span>)</span>
+            <div class="logout-btn" onclick="logout()">Logout</div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="welcome-card">
+            <h1>Welcome to POS System</h1>
+            <p>Streamline your sales, manage inventory, and track performance all in one place.</p>
+        </div>
+        
+        <h2>Quick Actions</h2>
+        <div class="features-grid">
+            <div class="feature-card" onclick="navigateTo('/feature1')">
+                <div class="feature-icon">💰</div>
+                <div class="feature-title">Sales Transaction</div>
+                <div class="feature-desc">Process customer purchases, apply discounts, and complete sales</div>
             </div>
-            <div class="container">
-                <div class="header">
-                    <h1>🏪 Modern POS System</h1>
-                    <p>Complete Point of Sale Solution</p>
+            
+            <div class="feature-card" onclick="navigateTo('/feature2')">
+                <div class="feature-icon">🧾</div>
+                <div class="feature-title">Receipt Generation</div>
+                <div class="feature-desc">Generate and print customer receipts for completed transactions</div>
+            </div>
+            
+            <div class="feature-card" onclick="navigateTo('/feature3')">
+                <div class="feature-icon">📊</div>
+                <div class="feature-title">Sales Reporting</div>
+                <div class="feature-desc">View sales summaries, analytics, and performance metrics</div>
+            </div>
+        </div>
+        
+        <div class="admin-section" id="adminSection" style="display: none;">
+            <div class="admin-title">🔧 Admin Management</div>
+            <div class="admin-grid">
+                <div class="admin-card" onclick="navigateTo('/products')">
+                    <strong>📦 Product Management</strong><br>
+                    Add, edit, or remove products from inventory
                 </div>
-                
-                <div class="stats-bar" id="statsBar">
-                    <div class="stat">
-                        <div class="stat-value" id="todayRevenue">₱0</div>
-                        <div class="stat-label">Today's Revenue</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value" id="totalRevenue">₱0</div>
-                        <div class="stat-label">Total Revenue</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value" id="totalTransactions">0</div>
-                        <div class="stat-label">Transactions</div>
-                    </div>
-                    <div class="stat">
-                        <div class="stat-value" id="totalProducts">0</div>
-                        <div class="stat-label">Products</div>
-                    </div>
-                </div>
-
-                <div class="feature-grid">
-                    <div class="feature-card" onclick="navigateTo('/feature1')">
-                        <div class="feature-icon">🛒</div>
-                        <div class="feature-title">FEATURE 1: Sales Transaction</div>
-                        <div class="feature-desc">Add items to cart, apply discounts, process payments</div>
-                        <span class="feature-badge badge-core">Core Feature</span>
-                    </div>
-
-                    <div class="feature-card" onclick="navigateTo('/feature2')">
-                        <div class="feature-icon">🧾</div>
-                        <div class="feature-title">FEATURE 2: Receipt Generation</div>
-                        <div class="feature-desc">Generate, print, and email receipts</div>
-                        <span class="feature-badge badge-core">Core Feature</span>
-                    </div>
-
-                    <div class="feature-card" onclick="navigateTo('/feature3')">
-                        <div class="feature-icon">📊</div>
-                        <div class="feature-title">FEATURE 3: Sales Reports</div>
-                        <div class="feature-desc">Daily, monthly reports and analytics</div>
-                        <span class="feature-badge badge-core">Core Feature</span>
-                    </div>
-
-                    <div class="feature-card admin-only" onclick="navigateTo('/products')">
-                        <div class="feature-icon">🛍️</div>
-                        <div class="feature-title">Product Management</div>
-                        <div class="feature-desc">Add, edit, delete products</div>
-                        <span class="feature-badge badge-admin">Admin Only</span>
-                    </div>
-
-                    <div class="feature-card admin-only" onclick="navigateTo('/history')">
-                        <div class="feature-icon">📜</div>
-                        <div class="feature-title">Transaction History</div>
-                        <div class="feature-desc">View all past transactions</div>
-                        <span class="feature-badge badge-admin">Admin Only</span>
-                    </div>
+                <div class="admin-card" onclick="navigateTo('/history')">
+                    <strong>📜 Transaction History</strong><br>
+                    View all past transactions and details
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        let currentUser = null;
-        let currentRole = null;
-
-        async function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            
-            const response = await fetch('/api/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                currentUser = data.username;
-                currentRole = data.role;
-                document.getElementById('userName').innerText = currentUser;
-                document.getElementById('userRole').innerText = currentRole === 'admin' ? '👑 Admin' : '👤 User';
+        async function checkAuth() {
+            try {
+                const response = await fetch('/api/check-auth');
+                const data = await response.json();
                 
-                // Show/hide admin-only features
-                const adminElements = document.querySelectorAll('.admin-only');
-                if (currentRole === 'admin') {
-                    adminElements.forEach(el => el.style.display = 'block');
-                } else {
-                    adminElements.forEach(el => el.style.display = 'none');
+                if (!data.authenticated) {
+                    window.location.href = '/login';
+                    return;
                 }
                 
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'block';
+                document.getElementById('username').textContent = data.username;
+                document.getElementById('role').textContent = data.role;
                 
-                loadStats();
-            } else {
-                document.getElementById('loginError').innerText = 'Invalid credentials';
+                if (data.role === 'admin') {
+                    document.getElementById('adminSection').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Auth check error:', error);
+                window.location.href = '/login';
             }
         }
         
         async function logout() {
             await fetch('/api/logout', { method: 'POST' });
-            currentUser = null;
-            currentRole = null;
-            document.getElementById('dashboard').style.display = 'none';
-            document.getElementById('loginScreen').style.display = 'block';
-            document.getElementById('username').value = '';
-            document.getElementById('password').value = '';
-        }
-        
-        async function loadStats() {
-            try {
-                const response = await fetch('/api/analytics');
-                const data = await response.json();
-                
-                document.getElementById('totalRevenue').innerText = `₱${data.total_revenue.toLocaleString()}`;
-                document.getElementById('totalTransactions').innerText = data.total_transactions;
-                document.getElementById('totalProducts').innerText = data.total_products;
-                
-                // Calculate today's revenue
-                const today = new Date().toISOString().split('T')[0];
-                const dailyRes = await fetch(`/api/reports/daily?date=${today}`);
-                const dailyData = await dailyRes.json();
-                document.getElementById('todayRevenue').innerText = `₱${dailyData.total_revenue.toLocaleString()}`;
-            } catch(e) {
-                console.error('Error loading stats:', e);
-            }
+            window.location.href = '/login';
         }
         
         function navigateTo(path) {
             window.location.href = path;
-        }
-        
-        // Check if already logged in
-        async function checkAuth() {
-            const response = await fetch('/api/check-auth');
-            const data = await response.json();
-            if (data.authenticated) {
-                currentUser = data.username;
-                currentRole = data.role;
-                document.getElementById('userName').innerText = currentUser;
-                document.getElementById('userRole').innerText = currentRole === 'admin' ? '👑 Admin' : '👤 User';
-                
-                const adminElements = document.querySelectorAll('.admin-only');
-                if (currentRole === 'admin') {
-                    adminElements.forEach(el => el.style.display = 'block');
-                } else {
-                    adminElements.forEach(el => el.style.display = 'none');
-                }
-                
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('dashboard').style.display = 'block';
-                loadStats();
-            }
         }
         
         checkAuth();
