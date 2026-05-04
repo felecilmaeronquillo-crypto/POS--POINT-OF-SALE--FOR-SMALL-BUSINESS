@@ -448,8 +448,29 @@ def get_daily_revenue():
 
 # ========== PAGE ROUTES ==========
 @app.route('/')
-def index():
-    return render_template('dashboard.html')
+def home():
+    if 'username' in session:
+        return render_template('dashboard.html')
+    else:
+        return render_template('login.html')
+    
+@app.route('/login', methods=['GET', 'POST'])
+def login_page():
+    if request.method == 'POST':
+        data = request.form
+        username = data.get('username')
+        password = data.get('password')
+        
+        success, role = pos_controller.auth_manager.authenticate(username, password)
+        
+        if success:
+            session['username'] = username
+            session['role'] = role
+            return jsonify({'success': True, 'username': username, 'role': role})
+        
+        return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
+    
+    return render_template('login.html')
 
 @app.route('/feature1')
 @login_required
