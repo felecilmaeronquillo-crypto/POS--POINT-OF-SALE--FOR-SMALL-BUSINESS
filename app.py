@@ -1,5 +1,7 @@
 # app.py - Vercel-compatible POS System Backend
-from flask import Flask, request, jsonify, session, render_template
+from logging import Manager
+
+from flask import Flask, redirect, request, jsonify, session, render_template, url_for
 from datetime import datetime, timedelta
 import json
 import os
@@ -450,27 +452,39 @@ def get_daily_revenue():
 @app.route('/')
 def home():
     if 'username' in session:
-        return render_template('dashboard.html')
-    else:
-        return render_template('login.html')
+        if session.get('role') == 'admin':
+            return redirect(url_for('admin_dashboard'))
+        return redirect(url_for('login'))
+        
     
 @app.route('/login', methods=['GET', 'POST'])
-def login_page():
-    if request.method == 'POST':
-        data = request.form
-        username = data.get('username')
-        password = data.get('password')
-        
-        success, role = pos_controller.auth_manager.authenticate(username, password)
-        
-        if success:
-            session['username'] = username
-            session['role'] = role
-            return jsonify({'success': True, 'username': username, 'role': role})
-        
-        return jsonify({'success': False, 'message': 'Invalid credentials'}), 401
+def login():
+    if session.get('username'):
+        if session.get('role') == 'admin':
+            return redirect(url_for('admin_dashboard'))
+        return redirect(url_for('user_dashboard'))
     
-    return render_template('login.html')
+    message = ""
+    if request.method == 'POST':
+        username = request.form.get('username').strip()
+        password = request.form.get('password')
+        
+        if not username or not password:
+            message = "Please enter both username and password."
+        else:
+            user = Manager.auth_manager.authenticate(username, password)
+            if user:
+                session['username'] = username
+                session['role'] = user['role']
+
+                if user['role'] == 'admin':
+                    return redirect(url_for('admin_dashboard'))
+                else:
+                    return redirect(url_for('user_dashboard'))
+            else:
+                message = "Invalid credentials. Please try again."
+
+        return render_template('login.html', message=message)
 
 @app.route('/feature1')
 @login_required
