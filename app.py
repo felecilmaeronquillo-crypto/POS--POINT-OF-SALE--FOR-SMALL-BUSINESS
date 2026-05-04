@@ -449,7 +449,7 @@ def get_daily_revenue():
 # ========== PAGE ROUTES ==========
 @app.route('/')
 def index():
-    return render_template('login.html')
+    return render_template('dashboard.html')
 
 @app.route('/feature1')
 @login_required
