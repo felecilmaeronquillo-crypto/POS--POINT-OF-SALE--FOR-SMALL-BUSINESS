@@ -23,11 +23,15 @@ class InMemoryDataStorage:
                 {"id": 3, "name": "Mechanical Keyboard", "price": 1200, "stock": 30, "sales": 0},
                 {"id": 4, "name": "27-inch Monitor", "price": 8500, "stock": 15, "sales": 0},
                 {"id": 5, "name": "USB-C Cable", "price": 150, "stock": 100, "sales": 0},
-                {"id": 6, "name": "Gaming Headset", "price": 2500, "stock": 25, "sales": 0}
+                {"id": 6, "name": "Gaming Headset", "price": 2500, "stock": 25, "sales": 0},
+                {"id": 7, "name": "Tablet", "price": 15000, "stock": 10, "sales": 0},
+                {"id": 8, "name": "Printer", "price": 20000, "stock": 7, "sales": 0},
+                {"id": 9, "name": "Flash Drive", "price": 500, "stock": 15, "sales": 0},
+                {"id": 10, "name": "Scientific Calculator", "price": 600, "stock": 20, "sales": 0}
             ],
             'transactions': []
         }
-        self._next_product_id = 7
+        self._next_product_id = 11
     
     def load_data(self):
         return self._data
