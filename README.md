@@ -65,3 +65,6 @@ Module 3: Sales Summary and Reporting
 - Highlight best-selling products
 - Calculate total revenue for the period
 - View past sales history easily
+
+
+https://pos-point-of-sale-for-small-busines-omega.vercel.app/
